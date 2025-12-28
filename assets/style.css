@@ -1,0 +1,619 @@
+/* Cosmic 36 — Styles (assets/style.css) */
+:root {
+    color-scheme: light dark;
+
+    --sys-bg: Canvas;
+    --sys-text: CanvasText;
+    --sys-border: color-mix(in oklab, CanvasText 14%, transparent);
+    --sys-muted: color-mix(in oklab, CanvasText 55%, transparent);
+
+    --bg: var(--sys-bg);
+    --text: var(--sys-text);
+    --muted: var(--sys-muted);
+    --border: var(--sys-border);
+
+    --panel: color-mix(in oklab, Canvas 92%, CanvasText 8%);
+    --panel2: color-mix(in oklab, Canvas 96%, CanvasText 4%);
+    --glass: color-mix(in oklab, Canvas 85%, transparent);
+
+    --lightDayTint: rgba(16, 185, 129, 0.12);
+    --anchorTint: rgba(234, 88, 12, 0.26);
+    --echoTint: rgba(249, 115, 22, 0.18);
+
+    --anchorSolid: rgba(234, 88, 12, 0.98);
+    --echoSolid: rgba(249, 115, 22, 0.85);
+    --lightSolid: rgba(16, 185, 129, 0.90);
+
+    --todayOutline: color-mix(in oklab, CanvasText 28%, transparent);
+    --ok: rgba(34, 197, 94, 0.95);
+
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --shadowStrong: 0 14px 40px rgba(0, 0, 0, 0.18);
+
+    --maxw: 520px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --panel: color-mix(in oklab, Canvas 88%, CanvasText 12%);
+        --panel2: color-mix(in oklab, Canvas 94%, CanvasText 6%);
+        --glass: color-mix(in oklab, Canvas 78%, transparent);
+
+        --lightDayTint: rgba(16, 185, 129, 0.16);
+        --anchorTint: rgba(234, 88, 12, 0.30);
+        --echoTint: rgba(249, 115, 22, 0.20);
+
+        --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+        --shadowStrong: 0 16px 48px rgba(0, 0, 0, 0.55);
+    }
+}
+
+html[data-layout="desktop"] {
+    --maxw: 980px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--text) 35%, transparent);
+    outline-offset: 3px;
+    border-radius: 12px;
+}
+
+.aura {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(900px 520px at 20% -10%, color-mix(in oklab, rgba(249, 115, 22, 0.22), transparent 30%), transparent 60%),
+        radial-gradient(900px 520px at 90% 10%, color-mix(in oklab, rgba(16, 185, 129, 0.18), transparent 30%), transparent 60%),
+        radial-gradient(700px 420px at 40% 110%, color-mix(in oklab, rgba(59, 130, 246, 0.14), transparent 30%), transparent 60%);
+    opacity: 0.8;
+    mix-blend-mode: multiply;
+}
+
+@media (prefers-color-scheme: dark) {
+    .aura {
+        opacity: 0.55;
+        mix-blend-mode: screen;
+    }
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 28px;
+}
+
+.appHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 6px;
+    margin-bottom: 14px;
+}
+
+.brand h1 {
+    margin: 0;
+    font-weight: 950;
+    letter-spacing: 0.2px;
+    font-size: 16px;
+    line-height: 1.1;
+}
+
+.brand p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.headerActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.topBtn {
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel2) 80%, transparent);
+    border-radius: 12px;
+    padding: 10px 10px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.card {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: color-mix(in oklab, var(--panel) 92%, transparent);
+    overflow: hidden;
+    box-shadow: var(--shadowStrong);
+    backdrop-filter: blur(10px);
+}
+
+.cardHeader {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.cardHeader h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 1000;
+    line-height: 1.1;
+}
+
+.cardHeader p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.25;
+}
+
+.chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    background: color-mix(in oklab, var(--panel2) 82%, transparent);
+    font-size: 12px;
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+    user-select: none;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+    background: color-mix(in oklab, var(--text) 10%, transparent);
+}
+
+.dot.anchor {
+    background: var(--anchorSolid);
+    border-color: var(--anchorSolid);
+}
+
+.dot.echo {
+    background: var(--echoSolid);
+    border-color: var(--echoSolid);
+}
+
+.dot.light {
+    background: var(--lightSolid);
+    border-color: var(--lightSolid);
+}
+
+.cardBody {
+    padding: 14px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+html[data-layout="desktop"] .layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+}
+
+.today {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+    box-shadow: var(--shadow);
+    outline: 1.5px solid var(--todayOutline);
+    outline-offset: 2px;
+}
+
+.today.light::before,
+.today.anchor::before,
+.today.echo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.today.light::before {
+    background: radial-gradient(700px 220px at 10% 0%, var(--lightDayTint), transparent 70%);
+}
+
+.today.anchor::before {
+    background: radial-gradient(740px 240px at 10% 0%, var(--anchorTint), transparent 72%);
+}
+
+.today.echo::before {
+    background: radial-gradient(740px 240px at 10% 0%, var(--echoTint), transparent 72%);
+}
+
+.todayTop {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.todayTop h3 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 1000;
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.todayTop h3 small {
+    font-size: 14px;
+    font-weight: 950;
+    color: color-mix(in oklab, var(--muted) 90%, transparent);
+    margin-left: 4px;
+    letter-spacing: 0.2px;
+}
+
+.stateBtn {
+    position: relative;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--glass) 70%, transparent);
+    font-size: 12px;
+    font-weight: 950;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.stateDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--text) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+}
+
+.stateDot.done {
+    background: var(--ok);
+    border-color: var(--ok);
+}
+
+.guidance {
+    position: relative;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 1000;
+    line-height: 1.25;
+}
+
+.hint {
+    position: relative;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.insight {
+    margin-top: 12px;
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background: color-mix(in oklab, var(--panel2) 78%, transparent);
+    border-radius: 16px;
+    padding: 12px;
+}
+
+.insight h4 {
+    margin: 0;
+    font-weight: 1000;
+    font-size: 12px;
+}
+
+.insight p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: color-mix(in oklab, var(--text) 86%, transparent);
+    line-height: 1.35;
+}
+
+.swipeHint {
+    position: relative;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: color-mix(in oklab, var(--muted) 95%, transparent);
+    user-select: none;
+}
+
+.sw .swipeHint b {
+    color: color-mix(in oklab, var(--text) 92%, transparent);
+}
+
+hr.sep {
+    height: 1px;
+    border: 0;
+    background: color-mix(in oklab, var(--border) 75%, transparent);
+    margin: 14px 0;
+    border-radius: 999px;
+}
+
+label.noteLabel {
+    display: block;
+    font-size: 12px;
+    font-weight: 1000;
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+    margin-bottom: 8px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    padding: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.4;
+    outline: none;
+}
+
+textarea::placeholder {
+    color: color-mix(in oklab, var(--muted) 85%, transparent);
+}
+
+.noteFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.live {
+    font-size: 12px;
+    color: color-mix(in oklab, var(--muted) 92%, transparent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 18px;
+}
+
+.live .mark {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--text) 10%, transparent);
+    border: 1px solid color-mix(in oklab, var(--text) 14%, transparent);
+}
+
+.live.ok {
+    color: color-mix(in oklab, var(--ok) 92%, transparent);
+}
+
+.live.ok .mark {
+    background: var(--ok);
+    border-color: var(--ok);
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel2) 75%, transparent);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.asideCard {
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel2) 80%, transparent);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+}
+
+.asideCard h2 {
+    margin: 0;
+    font-weight: 1000;
+    font-size: 14px;
+}
+
+.asideCard p {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.kv {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.kv .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    padding-top: 8px;
+}
+
+.kv .row:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.kv b {
+    color: color-mix(in oklab, var(--text) 92%, transparent);
+}
+
+/* Dialog (settings) */
+dialog {
+    border: none;
+    padding: 0;
+    width: min(520px, calc(100% - 16px));
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.35);
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.30);
+}
+
+@media (prefers-color-scheme: dark) {
+    dialog::backdrop {
+        background: rgba(0, 0, 0, 0.58);
+    }
+}
+
+.dialogBody {
+    padding: 14px;
+}
+
+.dialogHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.dialogHead h2 {
+    margin: 0;
+    font-weight: 1000;
+    font-size: 14px;
+}
+
+.field {
+    margin-top: 10px;
+}
+
+.field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 950;
+    color: color-mix(in oklab, var(--muted) 95%, transparent);
+    margin-bottom: 6px;
+}
+
+.field input[type="date"],
+.field select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    color: var(--text);
+    font-size: 14px;
+}
+
+.radioRow {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.radioRow input {
+    transform: translateY(1px);
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    background: color-mix(in oklab, CanvasText 88%, transparent);
+    color: Canvas;
+    padding: 10px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 1000;
+    opacity: 0;
+    transition: opacity 140ms ease, transform 140ms ease;
+    pointer-events: none;
+    z-index: 1000;
+    border: 1px solid color-mix(in oklab, CanvasText 18%, transparent);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
+}
