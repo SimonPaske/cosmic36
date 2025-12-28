@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cosmic 36 — Today</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta
+      name="theme-color"
+      content="#0b0b0f"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cosmic 36" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+    <style>
+      /* Your existing theme-aware CSS (unchanged) */
+      :root {
+        color-scheme: light dark;
+
+        --sys-bg: Canvas;
+        --sys-text: CanvasText;
+        --sys-border: color-mix(in oklab, CanvasText 14%, transparent);
+        --sys-muted: color-mix(in oklab, CanvasText 55%, transparent);
+
+        --bg: var(--sys-bg);
+        --text: var(--sys-text);
+        --muted: var(--sys-muted);
+        --border: var(--sys-border);
+
+        --panel: color-mix(in oklab, Canvas 92%, CanvasText 8%);
+        --panel2: color-mix(in oklab, Canvas 96%, CanvasText 4%);
+        --glass: color-mix(in oklab, Canvas 85%, transparent);
+
+        --lightDayTint: rgba(16, 185, 129, 0.12);
+        --anchorTint: rgba(234, 88, 12, 0.18);
+        --echoTint: rgba(249, 115, 22, 0.14);
+
+        --anchorSolid: rgba(234, 88, 12, 0.95);
+        --echoSolid: rgba(249, 115, 22, 0.92);
+        --lightSolid: rgba(16, 185, 129, 0.9);
+
+        --todayOutline: color-mix(in oklab, CanvasText 28%, transparent);
+        --ok: rgba(34, 197, 94, 0.95);
+
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        --shadowStrong: 0 14px 40px rgba(0, 0, 0, 0.18);
+
+        --maxw: 520px;
+        /* mobile default */
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --panel: color-mix(in oklab, Canvas 88%, CanvasText 12%);
+          --panel2: color-mix(in oklab, Canvas 94%, CanvasText 6%);
+          --glass: color-mix(in oklab, Canvas 78%, transparent);
+
+          --lightDayTint: rgba(16, 185, 129, 0.16);
+          --anchorTint: rgba(234, 88, 12, 0.24);
+          --echoTint: rgba(249, 115, 22, 0.18);
+
+          --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+          --shadowStrong: 0 16px 48px rgba(0, 0, 0, 0.55);
+        }
+      }
+
+      html[data-layout="desktop"] {
+        --maxw: 980px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial;
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .aura {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(
+            900px 520px at 20% -10%,
+            color-mix(in oklab, rgba(249, 115, 22, 0.22), transparent 30%),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 520px at 90% 10%,
+            color-mix(in oklab, rgba(16, 185, 129, 0.18), transparent 30%),
+            transparent 60%
+          ),
+          radial-gradient(
+            700px 420px at 40% 110%,
+            color-mix(in oklab, rgba(59, 130, 246, 0.14), transparent 30%),
+            transparent 60%
+          );
+        opacity: 0.8;
+        mix-blend-mode: multiply;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .aura {
+          opacity: 0.55;
+          mix-blend-mode: screen;
+        }
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 16px;
+        padding-bottom: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 6px;
+        margin-bottom: 14px;
+      }
+
+      .brand {
+        font-weight: 950;
+        letter-spacing: 0.2px;
+        font-size: 16px;
+        line-height: 1.1;
+      }
+
+      .sub {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .topBtns {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+
+      .btnTop {
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--panel2) 80%, transparent);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 10px;
+        font-weight: 900;
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: color-mix(in oklab, var(--panel) 92%, transparent);
+        overflow: hidden;
+        box-shadow: var(--shadowStrong);
+        backdrop-filter: blur(10px);
+      }
+
+      .panelHead {
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid
+          color-mix(in oklab, var(--border) 70%, transparent);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .dayTitle {
+        font-size: 14px;
+        font-weight: 1000;
+        line-height: 1.1;
+      }
+
+      .phase {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.25;
+      }
+
+      .chipRow {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+        background: color-mix(in oklab, var(--panel2) 82%, transparent);
+        font-size: 12px;
+        color: color-mix(in oklab, var(--text) 88%, transparent);
+        user-select: none;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+        background: color-mix(in oklab, var(--text) 10%, transparent);
+      }
+
+      .dot.anchor {
+        background: var(--anchorSolid);
+        border-color: var(--anchorSolid);
+      }
+
+      .dot.echo {
+        background: var(--echoSolid);
+        border-color: var(--echoSolid);
+      }
+
+      .dot.light {
+        background: var(--lightSolid);
+        border-color: var(--lightSolid);
+      }
+
+      .panelBody {
+        padding: 14px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      html[data-layout="desktop"] .grid {
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: start;
+      }
+
+      .heroCard {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: var(--panel);
+        padding: 14px;
+        position: relative;
+        overflow: hidden;
+        touch-action: pan-y;
+        box-shadow: var(--shadow);
+      }
+
+      .heroCard.todayOutline {
+        outline: 2px solid var(--todayOutline);
+        outline-offset: 2px;
+      }
+
+      .heroCard.lightTint::before,
+      .heroCard.anchorTint::before,
+      .heroCard.echoTint::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .heroCard.lightTint::before {
+        background: radial-gradient(
+          700px 220px at 10% 0%,
+          var(--lightDayTint),
+          transparent 70%
+        );
+      }
+
+      .heroCard.anchorTint::before {
+        background: radial-gradient(
+          740px 240px at 10% 0%,
+          var(--anchorTint),
+          transparent 72%
+        );
+      }
+
+      .heroCard.echoTint::before {
+        background: radial-gradient(
+          740px 240px at 10% 0%,
+          var(--echoTint),
+          transparent 72%
+        );
+      }
+
+      .heroTop {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .bigDay {
+        font-size: 32px;
+        font-weight: 1000;
+        letter-spacing: -0.5px;
+        line-height: 1;
+      }
+
+      .bigDay small {
+        font-size: 14px;
+        font-weight: 950;
+        color: color-mix(in oklab, var(--muted) 90%, transparent);
+        margin-left: 4px;
+        letter-spacing: 0.2px;
+      }
+
+      .statusPill {
+        position: relative;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--glass) 70%, transparent);
+        font-size: 12px;
+        font-weight: 950;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .statusIcon {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--text) 14%, transparent);
+        border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+      }
+
+      .statusIcon.done {
+        background: var(--ok);
+        border-color: var(--ok);
+      }
+
+      .guidance {
+        position: relative;
+        margin-top: 12px;
+        font-size: 16px;
+        font-weight: 1000;
+        line-height: 1.25;
+        letter-spacing: -0.1px;
+      }
+
+      .hint {
+        position: relative;
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      .swipeHint {
+        position: relative;
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: color-mix(in oklab, var(--muted) 95%, transparent);
+        user-select: none;
+      }
+
+      .swipeHint b {
+        color: color-mix(in oklab, var(--text) 92%, transparent);
+      }
+
+      .divider {
+        height: 1px;
+        background: color-mix(in oklab, var(--border) 70%, transparent);
+        margin: 14px 0;
+        border-radius: 999px;
+      }
+
+      .noteLabel {
+        font-size: 12px;
+        font-weight: 1000;
+        color: color-mix(in oklab, var(--text) 88%, transparent);
+        margin-bottom: 8px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--panel2);
+        padding: 12px;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.4;
+        outline: none;
+      }
+
+      textarea::placeholder {
+        color: color-mix(in oklab, var(--muted) 85%, transparent);
+      }
+
+      .saveRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+
+      .saved {
+        font-size: 12px;
+        color: color-mix(in oklab, var(--muted) 92%, transparent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 18px;
+      }
+
+      .saved .mark {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--text) 10%, transparent);
+        border: 1px solid color-mix(in oklab, var(--text) 14%, transparent);
+      }
+
+      .saved.ok {
+        color: color-mix(in oklab, var(--ok) 92%, transparent);
+      }
+
+      .saved.ok .mark {
+        background: var(--ok);
+        border-color: var(--ok);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--panel2) 75%, transparent);
+        color: color-mix(in oklab, var(--text) 92%, transparent);
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 950;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .btn.primary {
+        background: color-mix(in oklab, var(--panel2) 92%, transparent);
+        border-color: color-mix(in oklab, var(--border) 92%, transparent);
+      }
+
+      .sideCard {
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--panel2) 80%, transparent);
+        border-radius: 18px;
+        padding: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      .sideTitle {
+        font-weight: 1000;
+        margin-bottom: 8px;
+      }
+
+      .sideText {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .kv {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .kv .rowk {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border-top: 1px solid
+          color-mix(in oklab, var(--border) 70%, transparent);
+        padding-top: 8px;
+      }
+
+      .kv .rowk:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .kv b {
+        color: color-mix(in oklab, var(--text) 92%, transparent);
+      }
+
+      .drawerBackdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .drawerBackdrop {
+          background: rgba(0, 0, 0, 0.58);
+        }
+      }
+
+      .drawer {
+        width: 100%;
+        max-width: 520px;
+        background: var(--panel);
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+        border: 1px solid var(--border);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+        padding: 14px;
+        backdrop-filter: blur(12px);
+      }
+
+      .drawerHead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .drawerTitle {
+        font-weight: 1000;
+      }
+
+      .drawerClose {
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--panel2) 85%, transparent);
+        color: color-mix(in oklab, var(--text) 92%, transparent);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      .field {
+        margin-top: 10px;
+      }
+
+      .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 950;
+        color: color-mix(in oklab, var(--muted) 95%, transparent);
+        margin-bottom: 6px;
+      }
+
+      .field input[type="date"] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--panel2);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .radioRow {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        font-size: 13px;
+        color: color-mix(in oklab, var(--text) 86%, transparent);
+        font-weight: 900;
+      }
+
+      .radioRow input {
+        transform: translateY(1px);
+      }
+
+      .danger {
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--panel2) 78%, transparent);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .danger .muted {
+        color: color-mix(in oklab, var(--muted) 95%, transparent);
+        font-size: 12px;
+      }
+
+      .danger .btn {
+        margin-top: 10px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 18px;
+        background: color-mix(in oklab, CanvasText 88%, transparent);
+        color: Canvas;
+        padding: 10px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 1000;
+        opacity: 0;
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        pointer-events: none;
+        z-index: 1000;
+        border: 1px solid color-mix(in oklab, CanvasText 18%, transparent);
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-2px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="aura" aria-hidden="true"></div>
+
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <div class="brand">Cosmic 36 — Today</div>
+          <div class="sub">One screen. One day. One note.</div>
+        </div>
+        <div class="topBtns">
+          <button class="btnTop" id="layoutBtn">Desktop view</button>
+          <button class="btnTop" id="openSettings">Settings</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelHead">
+          <div>
+            <div class="dayTitle" id="headerTitle">Day — / 36</div>
+            <div class="phase" id="headerPhase">—</div>
+            <div class="chipRow" id="chipRow"></div>
+          </div>
+        </div>
+
+        <div class="panelBody">
+          <div class="grid">
+            <div>
+              <div class="heroCard todayOutline lightTint" id="heroCard">
+                <div class="heroTop">
+                  <div class="bigDay" id="bigDay">
+                    Day — <small>/ 36</small>
+                  </div>
+                  <div class="statusPill">
+                    <span class="statusIcon" id="statusIcon"></span>
+                    <span id="statusText">Not done</span>
+                  </div>
+                </div>
+
+                <div class="guidance" id="guidanceLine">—</div>
+                <div class="hint" id="hintLine">—</div>
+
+                <div class="swipeHint" id="swipeHint">
+                  <span><b>Swipe right</b> to mark done</span>
+                  <span><b>Swipe left</b> to undo</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="noteLabel" id="notePrompt">Note</div>
+              <textarea
+                id="noteBox"
+                placeholder="Write one honest line."
+              ></textarea>
+
+              <div class="saveRow">
+                <div class="saved" id="saveStatus">
+                  <span class="mark"></span
+                  ><span id="saveText">Autosave enabled</span>
+                </div>
+                <div class="actions">
+                  <button class="btn primary" id="toggleDoneBtn">
+                    Toggle ✓
+                  </button>
+                  <button class="btn" id="clearNoteBtn">Clear note</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="sideCard" id="sideCard" style="display: none">
+              <div class="sideTitle">Cycle snapshot</div>
+              <div class="sideText" id="sideText">—</div>
+              <div class="kv" id="kv"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="drawerBackdrop"
+      id="drawerBackdrop"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="drawer">
+        <div class="drawerHead">
+          <div class="drawerTitle">Settings</div>
+          <button class="drawerClose" id="closeSettings">Close</button>
+        </div>
+
+        <div class="field">
+          <label for="dob">Date of birth</label>
+          <input type="date" id="dob" />
+        </div>
+
+        <div class="field">
+          <label>Day boundary mode</label>
+          <div class="radioRow">
+            <label
+              ><input type="radio" name="mode" value="utc" checked />
+              UTC-safe</label
+            >
+            <label
+              ><input type="radio" name="mode" value="local" /> Local
+              midnight</label
+            >
+          </div>
+        </div>
+
+        <div class="danger">
+          <div style="font-weight: 1000">Data</div>
+          <div class="muted" style="margin-top: 6px">
+            Notes and progress are stored on this device (localStorage).
+            Clearing will remove them for this DOB/mode only.
+          </div>
+          <button class="btn" id="clearCycleBtn">
+            Clear current cycle data
+          </button>
+        </div>
+
+        <div class="danger" style="margin-top: 12px">
+          <div style="font-weight: 1000">Export</div>
+          <div class="muted" style="margin-top: 6px">
+            Download your current cycle as JSON for backup.
+          </div>
+          <button class="btn" id="exportBtn">Export cycle JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Saved</div>
+
+    <script>
+      (() => {
+        const CYCLE_DAYS = 36;
+        const ANCHORS = new Set([3, 6, 9, 12, 15, 18]);
+        const ECHOES = new Set([21, 24, 27, 30, 33, 36]);
+
+        const GUIDANCE = {
+          1: "Declare what you want, clearly and simply.",
+          2: "Make your daily repetition easy and automatic.",
+          3: "Repeat your declaration and take one aligned action.",
+          4: "Stay steady—do the repetition and let it be enough.",
+          5: "Notice resistance and keep moving gently anyway.",
+          6: "Repeat your action and add one new layer.",
+          7: "Hold the vision without needing proof today.",
+          8: "Choose alignment over mood—show up cleanly.",
+          9: "Complete the triad with a third aligned action.",
+          10: "Simplify—repeat the basics and breathe.",
+          11: "Let your body lead; act from calm certainty.",
+          12: "Repeat Day 3 exactly—no additions, no edits.",
+          13: "Stay consistent; trust the quiet momentum.",
+          14: "Notice what feels more natural now and continue.",
+          15: "Repeat Day 6—embody the layer with presence.",
+          16: "Choose steadiness over speed; keep it gentle.",
+          17: "Release doubt; repeat and return to the path.",
+          18: "Repeat the full stack and mark the shift within you.",
+          19: "Keep repeating—now watch what starts responding.",
+          20: "Stay open; let life meet your signal halfway.",
+          21: "Repeat Day 3 and notice what returns.",
+          22: "Observe patterns without judging them.",
+          23: "Stay consistent; don’t chase outcomes.",
+          24: "Repeat Day 6 and notice the response.",
+          25: "Keep the rhythm—small and real.",
+          26: "Let the field speak; write what you see.",
+          27: "Repeat Day 9 and watch what amplifies.",
+          28: "Receive what’s here; don’t force what’s not.",
+          29: "Keep repeating; trust the unfolding timing.",
+          30: "Repeat Day 12 and notice stability or drift.",
+          31: "Return to simplicity; hold the line.",
+          32: "Stay present—your consistency is the spell.",
+          33: "Repeat Day 15 and honor what’s undeniable now.",
+          34: "Let it land; rest in the new identity.",
+          35: "Give thanks and stay aligned—no extra effort needed.",
+          36: "Repeat once more, then choose what you carry forward.",
+        };
+
+        const SETTINGS_KEY = "cosmic36_settings_pwa_v1";
+        const STORE_KEY = "cosmic36_data_pwa_v1";
+
+        function loadJSON(key, fallback) {
+          try {
+            return JSON.parse(
+              localStorage.getItem(key) || JSON.stringify(fallback),
+            );
+          } catch {
+            return fallback;
+          }
+        }
+        function saveJSON(key, value) {
+          localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function getPhase(day) {
+          return day <= 18
+            ? {
+                name: "Phase 1: Sending",
+                desc: "Imprint through repetition. Pressure days carry the charge.",
+              }
+            : {
+                name: "Phase 2: Receiving",
+                desc: "Repeat and observe what returns. Let life respond.",
+              };
+        }
+        function getDayType(day) {
+          if (ANCHORS.has(day)) return "anchor";
+          if (ECHOES.has(day)) return "echo";
+          return "light";
+        }
+        function notePromptFor(day) {
+          const t = getDayType(day);
+          if (day === 1) return "What are you declaring today?";
+          if (day === 2) return "How will you make this repetition effortless?";
+          if (t === "anchor") return "What action did you take today?";
+          if (t === "echo") return "What returned today?";
+          return "What did you notice today?";
+        }
+        function nextSpecialDay(fromDay, set) {
+          for (let i = 0; i < 36; i++) {
+            const d = ((fromDay - 1 + i) % 36) + 1;
+            if (set.has(d)) return { day: d, inDays: i };
+          }
+          return null;
+        }
+
+        function toUtcDayNumber(d) {
+          return Math.floor(
+            Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000,
+          );
+        }
+        function toLocalDayNumber(d) {
+          const localMidnight = new Date(
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate(),
+          );
+          return Math.floor(localMidnight.getTime() / 86400000);
+        }
+        function dayNumber(d, mode) {
+          return mode === "local" ? toLocalDayNumber(d) : toUtcDayNumber(d);
+        }
+        function parseDob(value) {
+          if (!value) return null;
+          const [y, m, dd] = value.split("-").map(Number);
+          if (!y || !m || !dd) return null;
+          return new Date(y, m - 1, dd);
+        }
+        function pad2(n) {
+          return String(n).padStart(2, "0");
+        }
+        function formatYMD(d) {
+          return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        }
+
+        function cycleKey(dobStr, mode, cycleIndex) {
+          return `${dobStr}|${mode}|cycle${cycleIndex}`;
+        }
+        function getCycle(store, dobStr, mode, cycleIndex) {
+          const k = cycleKey(dobStr, mode, cycleIndex);
+          return (
+            store[k] || {
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              done: {},
+              notes: {},
+            }
+          );
+        }
+        function putCycle(store, dobStr, mode, cycleIndex, cycle) {
+          const k = cycleKey(dobStr, mode, cycleIndex);
+          cycle.updatedAt = Date.now();
+          store[k] = cycle;
+          saveJSON(STORE_KEY, store);
+        }
+
+        // UI refs
+        const headerTitle = document.getElementById("headerTitle");
+        const headerPhase = document.getElementById("headerPhase");
+        const chipRow = document.getElementById("chipRow");
+        const heroCard = document.getElementById("heroCard");
+        const bigDay = document.getElementById("bigDay");
+        const guidanceLine = document.getElementById("guidanceLine");
+        const hintLine = document.getElementById("hintLine");
+        const swipeHint = document.getElementById("swipeHint");
+        const statusIcon = document.getElementById("statusIcon");
+        const statusText = document.getElementById("statusText");
+        const notePrompt = document.getElementById("notePrompt");
+        const noteBox = document.getElementById("noteBox");
+        const saveStatus = document.getElementById("saveStatus");
+        const saveText = document.getElementById("saveText");
+        const toggleDoneBtn = document.getElementById("toggleDoneBtn");
+        const clearNoteBtn = document.getElementById("clearNoteBtn");
+        const drawerBackdrop = document.getElementById("drawerBackdrop");
+        const openSettings = document.getElementById("openSettings");
+        const closeSettings = document.getElementById("closeSettings");
+        const dobInput = document.getElementById("dob");
+        const clearCycleBtn = document.getElementById("clearCycleBtn");
+        const exportBtn = document.getElementById("exportBtn");
+        const toast = document.getElementById("toast");
+        const modeRadios = [...document.querySelectorAll('input[name="mode"]')];
+        const layoutBtn = document.getElementById("layoutBtn");
+        const sideCard = document.getElementById("sideCard");
+        const sideText = document.getElementById("sideText");
+        const kv = document.getElementById("kv");
+
+        let store = loadJSON(STORE_KEY, {});
+        let settings = loadJSON(SETTINGS_KEY, {
+          dobStr: "",
+          mode: "utc",
+          layout: "mobile",
+        });
+
+        let state = {
+          dobStr: settings.dobStr || "",
+          mode: settings.mode || "utc",
+          layout: settings.layout || "mobile",
+          cycleIndex: null,
+          dayInCycle: null,
+          cycleStartYMD: "",
+          todayYMD: "",
+          cycle: null,
+          savingTimer: null,
+        };
+
+        function persistSettings() {
+          saveJSON(SETTINGS_KEY, {
+            dobStr: state.dobStr,
+            mode: state.mode,
+            layout: state.layout,
+          });
+        }
+
+        function showToast(msg) {
+          toast.textContent = msg;
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 900);
+        }
+        function setSaveIndicator(kind) {
+          if (kind === "saving") {
+            saveStatus.classList.remove("ok");
+            saveText.textContent = "Saving…";
+          } else if (kind === "saved") {
+            saveStatus.classList.add("ok");
+            saveText.textContent = "Saved ✓";
+            setTimeout(() => {
+              saveStatus.classList.remove("ok");
+              saveText.textContent = "Autosave enabled";
+            }, 1100);
+          } else {
+            saveStatus.classList.remove("ok");
+            saveText.textContent = "Autosave enabled";
+          }
+        }
+
+        function compute() {
+          const dob = parseDob(state.dobStr);
+          if (!dob) return null;
+          const today = new Date();
+          const dobDay = dayNumber(dob, state.mode);
+          const todayDay = dayNumber(today, state.mode);
+          if (todayDay < dobDay) return null;
+
+          const daysLived = todayDay - dobDay;
+          const cycleIndex = Math.floor(daysLived / CYCLE_DAYS) + 1;
+          const dayInCycle = (daysLived % CYCLE_DAYS) + 1;
+
+          const currentCycleStartOffset = daysLived - (daysLived % CYCLE_DAYS);
+          const cycleStartDate = new Date(
+            dob.getFullYear(),
+            dob.getMonth(),
+            dob.getDate(),
+          );
+          cycleStartDate.setDate(
+            cycleStartDate.getDate() + currentCycleStartOffset,
+          );
+
+          return {
+            cycleIndex,
+            dayInCycle,
+            cycleStartYMD: formatYMD(cycleStartDate),
+            todayYMD: formatYMD(today),
+            daysLived,
+          };
+        }
+
+        function dotHTML(kind) {
+          if (kind === "anchor") return `<span class="dot anchor"></span>`;
+          if (kind === "echo") return `<span class="dot echo"></span>`;
+          return `<span class="dot light"></span>`;
+        }
+        function setCardTint(type) {
+          heroCard.classList.remove("lightTint", "anchorTint", "echoTint");
+          if (type === "anchor") heroCard.classList.add("anchorTint");
+          else if (type === "echo") heroCard.classList.add("echoTint");
+          else heroCard.classList.add("lightTint");
+        }
+        function setDoneUI(done) {
+          statusIcon.classList.toggle("done", done);
+          statusText.textContent = done ? "Done ✓" : "Not done";
+          toggleDoneBtn.textContent = done ? "Undo" : "Toggle ✓";
+        }
+        function persistCycle() {
+          if (!state.cycle || !state.dobStr) return;
+          putCycle(
+            store,
+            state.dobStr,
+            state.mode,
+            state.cycleIndex,
+            state.cycle,
+          );
+        }
+        function toggleDone(val) {
+          if (!state.cycle) return;
+          const key = String(state.dayInCycle);
+          const next = typeof val === "boolean" ? val : !state.cycle.done[key];
+          state.cycle.done[key] = next;
+          persistCycle();
+          setDoneUI(next);
+          showToast(next ? "Marked done ✓" : "Undone");
+        }
+
+        function applyLayout() {
+          document.documentElement.dataset.layout = state.layout;
+          layoutBtn.textContent =
+            state.layout === "desktop" ? "Mobile view" : "Desktop view";
+          const isDesktop = state.layout === "desktop";
+          sideCard.style.display = isDesktop ? "block" : "none";
+          swipeHint.style.display = isDesktop ? "none" : "flex";
+        }
+
+        function renderSide(info) {
+          if (state.layout !== "desktop") return;
+          if (!info) {
+            sideText.textContent = "—";
+            kv.innerHTML = "";
+            return;
+          }
+
+          const doneCount = state.cycle
+            ? Object.values(state.cycle.done).filter(Boolean).length
+            : 0;
+          sideText.textContent =
+            "A calm snapshot so you can stay oriented without leaving Today.";
+
+          const nextAnchor = nextSpecialDay(state.dayInCycle, ANCHORS);
+          const nextEcho = nextSpecialDay(state.dayInCycle, ECHOES);
+
+          kv.innerHTML = `
+        <div class="rowk"><span>Today</span><b>Day ${state.dayInCycle} / 36</b></div>
+        <div class="rowk"><span>Cycle #</span><b>${state.cycleIndex}</b></div>
+        <div class="rowk"><span>Cycle start</span><b>${state.cycleStartYMD}</b></div>
+        <div class="rowk"><span>Days marked done</span><b>${doneCount} / 36</b></div>
+        <div class="rowk"><span>Next anchor</span><b>${nextAnchor ? `Day ${nextAnchor.day} (in ${nextAnchor.inDays}d)` : "—"}</b></div>
+        <div class="rowk"><span>Next echo</span><b>${nextEcho ? `Day ${nextEcho.day} (in ${nextEcho.inDays}d)` : "—"}</b></div>
+      `;
+        }
+
+        function render() {
+          applyLayout();
+
+          const info = compute();
+          if (!info) {
+            headerTitle.textContent = "Day — / 36";
+            headerPhase.textContent =
+              "Open Settings and enter your date of birth.";
+            chipRow.innerHTML = "";
+            bigDay.innerHTML = `Day — <small>/ 36</small>`;
+            guidanceLine.textContent = "—";
+            hintLine.textContent = "—";
+            notePrompt.textContent = "Note";
+            noteBox.value = "";
+            setDoneUI(false);
+            setCardTint("light");
+            renderSide(null);
+            return;
+          }
+
+          state.cycleIndex = info.cycleIndex;
+          state.dayInCycle = info.dayInCycle;
+          state.cycleStartYMD = info.cycleStartYMD;
+          state.todayYMD = info.todayYMD;
+
+          state.cycle = getCycle(
+            store,
+            state.dobStr,
+            state.mode,
+            state.cycleIndex,
+          );
+
+          const phase = getPhase(state.dayInCycle);
+          const t = getDayType(state.dayInCycle);
+
+          headerTitle.textContent = `Day ${state.dayInCycle} / 36`;
+          headerPhase.textContent = `${phase.name} • ${phase.desc}`;
+
+          bigDay.innerHTML = `Day ${state.dayInCycle} <small>/ 36</small>`;
+          guidanceLine.textContent =
+            GUIDANCE[state.dayInCycle] || "Stay with the rhythm.";
+          hintLine.textContent =
+            t === "anchor"
+              ? "Pressure day: keep it clean and exact."
+              : t === "echo"
+                ? "Mirror day: repeat and observe what returns."
+                : "Light day: do the small repetition and breathe.";
+
+          const nextAnchor = nextSpecialDay(state.dayInCycle, ANCHORS);
+          const nextEcho = nextSpecialDay(state.dayInCycle, ECHOES);
+
+          const typeChip =
+            t === "anchor"
+              ? `<span class="chip">${dotHTML("anchor")} Anchor day</span>`
+              : t === "echo"
+                ? `<span class="chip">${dotHTML("echo")} Echo day</span>`
+                : `<span class="chip">${dotHTML("light")} Light day</span>`;
+
+          chipRow.innerHTML = [
+            typeChip,
+            `<span class="chip">Cycle #${state.cycleIndex}</span>`,
+            nextAnchor
+              ? `<span class="chip">${dotHTML("anchor")} Next anchor: Day ${nextAnchor.day} (in ${nextAnchor.inDays}d)</span>`
+              : "",
+            nextEcho
+              ? `<span class="chip">${dotHTML("echo")} Next echo: Day ${nextEcho.day} (in ${nextEcho.inDays}d)</span>`
+              : "",
+          ].join("");
+
+          setCardTint(t);
+
+          const done = !!state.cycle.done[String(state.dayInCycle)];
+          setDoneUI(done);
+
+          notePrompt.textContent = notePromptFor(state.dayInCycle);
+          const existing = state.cycle.notes[String(state.dayInCycle)] || "";
+          if (
+            document.activeElement !== noteBox &&
+            noteBox.value !== existing
+          ) {
+            noteBox.value = existing;
+          }
+
+          renderSide(info);
+        }
+
+        // Autosave notes
+        function scheduleAutosave() {
+          if (!state.cycle) return;
+          if (state.savingTimer) clearTimeout(state.savingTimer);
+          setSaveIndicator("saving");
+          state.savingTimer = setTimeout(() => {
+            const dayKey = String(state.dayInCycle);
+            state.cycle.notes[dayKey] = noteBox.value || "";
+            persistCycle();
+            setSaveIndicator("saved");
+          }, 650);
+        }
+        function saveNow() {
+          if (!state.cycle) return;
+          const dayKey = String(state.dayInCycle);
+          state.cycle.notes[dayKey] = noteBox.value || "";
+          persistCycle();
+          setSaveIndicator("saved");
+        }
+
+        // Swipe gestures
+        let touch = { startX: 0, startY: 0 };
+        const SWIPE_X = 55;
+        const SWIPE_Y = 80;
+
+        heroCard.addEventListener(
+          "touchstart",
+          (e) => {
+            const t = e.touches[0];
+            touch.startX = t.clientX;
+            touch.startY = t.clientY;
+          },
+          { passive: true },
+        );
+
+        heroCard.addEventListener(
+          "touchmove",
+          (e) => {
+            const t = e.touches[0];
+            const dx = t.clientX - touch.startX;
+            const dy = t.clientY - touch.startY;
+            if (Math.abs(dx) > 12 && Math.abs(dy) < 20) e.preventDefault();
+          },
+          { passive: false },
+        );
+
+        heroCard.addEventListener(
+          "touchend",
+          (e) => {
+            if (state.layout === "desktop") return;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - touch.startX;
+            const dy = t.clientY - touch.startY;
+            if (Math.abs(dy) > SWIPE_Y) return;
+            if (dx > SWIPE_X) toggleDone(true);
+            else if (dx < -SWIPE_X) toggleDone(false);
+          },
+          { passive: true },
+        );
+
+        // Buttons + layout
+        noteBox.addEventListener("input", scheduleAutosave);
+        noteBox.addEventListener("blur", saveNow);
+
+        clearNoteBtn.addEventListener("click", () => {
+          if (!confirm("Clear the note for today?")) return;
+          noteBox.value = "";
+          saveNow();
+          showToast("Cleared note");
+        });
+        toggleDoneBtn.addEventListener("click", () => toggleDone());
+
+        layoutBtn.addEventListener("click", () => {
+          state.layout = state.layout === "desktop" ? "mobile" : "desktop";
+          persistSettings();
+          render();
+          showToast(
+            state.layout === "desktop" ? "Desktop view" : "Mobile view",
+          );
+        });
+
+        // Drawer
+        function openDrawer() {
+          drawerBackdrop.style.display = "flex";
+        }
+        function closeDrawer() {
+          drawerBackdrop.style.display = "none";
+        }
+
+        openSettings.addEventListener("click", openDrawer);
+        closeSettings.addEventListener("click", closeDrawer);
+        drawerBackdrop.addEventListener("click", (e) => {
+          if (e.target === drawerBackdrop) closeDrawer();
+        });
+
+        // Settings + data
+        const modeRadios = [...document.querySelectorAll('input[name="mode"]')];
+        const dobInput = document.getElementById("dob");
+        const clearCycleBtn = document.getElementById("clearCycleBtn");
+        const exportBtn = document.getElementById("exportBtn");
+
+        function syncSettingsUI() {
+          dobInput.value = state.dobStr || "";
+          modeRadios.forEach((r) => (r.checked = r.value === state.mode));
+        }
+        function applySettings(dobStr, mode) {
+          state.dobStr = dobStr;
+          state.mode = mode;
+          persistSettings();
+          render();
+        }
+        dobInput.addEventListener("change", () => {
+          const v = dobInput.value;
+          if (!v) return;
+          applySettings(v, state.mode);
+        });
+        modeRadios.forEach((r) => {
+          r.addEventListener("change", () => {
+            if (r.checked) applySettings(state.dobStr, r.value);
+          });
+        });
+
+        function cycleKey(dobStr, mode, cycleIndex) {
+          return `${dobStr}|${mode}|cycle${cycleIndex}`;
+        }
+
+        clearCycleBtn.addEventListener("click", () => {
+          const info = compute();
+          if (!info) return alert("Set your DOB first.");
+          const k = cycleKey(state.dobStr, state.mode, info.cycleIndex);
+          if (
+            !confirm(
+              "Clear notes + done marks for the current cycle on this device?",
+            )
+          )
+            return;
+          delete store[k];
+          saveJSON(STORE_KEY, store);
+          state.cycle = getCycle(
+            store,
+            state.dobStr,
+            state.mode,
+            info.cycleIndex,
+          );
+          noteBox.value = "";
+          setSaveIndicator("idle");
+          showToast("Cleared");
+          closeDrawer();
+          render();
+        });
+
+        exportBtn.addEventListener("click", () => {
+          const info = compute();
+          if (!info) return alert("Set your DOB first.");
+          const cycle = getCycle(
+            store,
+            state.dobStr,
+            state.mode,
+            state.cycleIndex,
+          );
+          const payload = {
+            exportedAt: new Date().toISOString(),
+            dob: state.dobStr,
+            mode: state.mode,
+            layout: state.layout,
+            cycleIndex: state.cycleIndex,
+            dayInCycleToday: info.dayInCycle,
+            cycleStartYMD: info.cycleStartYMD,
+            data: cycle,
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `cosmic36-cycle-${state.cycleIndex}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          showToast("Exported");
+        });
+
+        // Init
+        function init() {
+          const params = new URLSearchParams(location.search);
+          const dobFromUrl = params.get("dob");
+          if (dobFromUrl && /^\d{4}-\d{2}-\d{2}$/.test(dobFromUrl))
+            state.dobStr = dobFromUrl;
+
+          syncSettingsUI();
+          applyLayout();
+          render();
+          if (!state.dobStr) openDrawer();
+        }
+        init();
+      })();
+    </script>
+
+    <!-- Service Worker register -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./service-worker.js")
+            .catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
