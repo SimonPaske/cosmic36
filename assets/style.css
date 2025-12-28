@@ -680,3 +680,205 @@ dialog::backdrop {
 .badge.light {
     border-color: color-mix(in oklab, var(--lightSolid) 70%, transparent);
 }
+
+/* ---------- BANNERS (error/update) ---------- */
+.banner {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
+
+.bannerInner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.banner.update {
+    background: color-mix(in oklab, var(--panel) 75%, transparent);
+}
+
+.banner.error {
+    background: color-mix(in oklab, #ef4444 12%, var(--panel));
+}
+
+/* ---------- NUDGE + RITUAL ---------- */
+.nudge {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel2) 85%, transparent);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.ritual {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel) 85%, transparent);
+}
+
+.ritualRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.breath {
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.breathDot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 75%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 15%, transparent);
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.breathText {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: .7;
+    }
+
+    50% {
+        transform: scale(1.35);
+        opacity: 1;
+    }
+}
+
+/* ---------- STACK + BIG EDITOR ---------- */
+.stack {
+    display: grid;
+    gap: 12px;
+}
+
+.bigArea {
+    min-height: 28vh;
+}
+
+/* ---------- TEXT SIZE (6) ---------- */
+:root[data-text="s"] textarea {
+    font-size: 13px;
+}
+
+:root[data-text="m"] textarea {
+    font-size: 15px;
+}
+
+:root[data-text="l"] textarea {
+    font-size: 17px;
+}
+
+/* ---------- BOTTOM NAV (5) ---------- */
+.bottomNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel) 88%, transparent);
+    backdrop-filter: blur(10px);
+}
+
+.navBtn {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel2) 85%, transparent);
+    font-weight: 850;
+}
+
+@media (min-width: 860px) {
+    .bottomNav {
+        display: none;
+    }
+}
+
+/* Add space so bottom nav doesn't cover content */
+@media (max-width: 859px) {
+    body {
+        padding-bottom: 72px;
+    }
+}
+
+/* ---------- REVIEW GRID 36 (2) ---------- */
+.grid36 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
+.cell {
+    border-radius: 14px;
+    border: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
+    background: color-mix(in oklab, var(--panel2) 85%, transparent);
+    padding: 10px 8px;
+    text-align: center;
+}
+
+.cell .num {
+    font-weight: 950;
+    font-size: 12px;
+}
+
+.cell.has {
+    outline: 2px solid color-mix(in oklab, var(--accent) 50%, transparent);
+}
+
+.cell.done {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, #10b981 45%, transparent);
+}
+
+.cell.anchor {
+    background: color-mix(in oklab, var(--anchorSolid) 12%, var(--panel2));
+}
+
+.cell.echo {
+    background: color-mix(in oklab, var(--echoSolid) 10%, var(--panel2));
+}
+
+.cell.light {
+    background: color-mix(in oklab, var(--lightSolid) 10%, var(--panel2));
+}
+
+/* ---------- CYCLE CLOSE (12) ---------- */
+.cycleClose {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--panel) 85%, transparent);
+}
+
+.tiny {
+    font-size: 12px;
+    color: var(--muted);
+}

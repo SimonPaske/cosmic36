@@ -1,4 +1,12 @@
-const CACHE_NAME = "cosmic36-v9";
+const CACHE_NAME = "cosmic36-v10";
+
+// ... keep your existing install/activate/fetch logic ...
+
+self.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "SKIP_WAITING") {
+        self.skipWaiting();
+    }
+});
 
 const ASSETS = [
     "./",

@@ -1,12 +1,12 @@
+<!-- index.html — FULL FILE (matches the app.js above) -->
 <!doctype html>
-<html lang="en" data-layout="mobile">
+<html lang="en" data-layout="mobile" data-experience="compact">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cosmic 36 — Today</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest" />
   <meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -47,12 +47,13 @@
         <h2 id="headerTitle">Day — / 36</h2>
         <p id="headerPhase">Open Settings and enter your date of birth.</p>
         <div class="chips" id="chipRow" aria-label="Today badges"></div>
+        <p class="microLine" id="patternLine" aria-live="polite"></p>
       </header>
 
       <div class="cardBody">
         <div class="layout">
-          <!-- Main column -->
-          <section aria-label="Today guidance and note">
+          <section aria-label="Main column">
+
             <section class="today light" id="todayCard" aria-label="Today guidance">
               <header class="todayTop">
                 <h3 id="bigDay">Day — <small>/ 36</small></h3>
@@ -69,6 +70,7 @@
               <aside class="insight" id="insightBox" aria-label="Spiritual insight" hidden>
                 <h4>Spiritual insight for today</h4>
                 <p id="insightLine">—</p>
+                <p class="micro">Written inside the app. Offline.</p>
               </aside>
 
               <p class="swipeHint" id="swipeHint">
@@ -81,7 +83,7 @@
 
             <section aria-label="Daily note">
               <label class="noteLabel" for="noteBox" id="notePrompt">Mindful note</label>
-              <textarea id="noteBox"
+              <textarea id="noteBox" rows="6"
                 placeholder="What did I do? What did I notice? What will I carry forward?"></textarea>
 
               <div class="noteFooter">
@@ -91,14 +93,69 @@
                 </div>
 
                 <div class="controls">
+                  <button class="btn" id="expandBtn" type="button" aria-expanded="false"
+                    aria-controls="noteBox">Expand</button>
                   <button class="btn" id="insertTemplateBtn" type="button">Insert template</button>
                   <button class="btn" id="clearNoteBtn" type="button">Clear</button>
                 </div>
               </div>
             </section>
+
+            <section id="extrasWrap" aria-label="Extra sections">
+              <hr class="sep" />
+
+              <details class="panel" id="intentionPanel">
+                <summary>Intention (morning)</summary>
+                <textarea id="intentionBox" rows="4"
+                  placeholder="One clear sentence: what will I repeat + embody today?"></textarea>
+                <div class="noteFooter">
+                  <div class="live" aria-live="polite">
+                    <span class="mark" aria-hidden="true"></span>
+                    <span class="mini" id="intentionSaveText">Autosave enabled</span>
+                  </div>
+                </div>
+              </details>
+
+              <details class="panel" id="reflectionPanel">
+                <summary>Reflection (evening)</summary>
+                <textarea id="reflectionBox" rows="5"
+                  placeholder="What returned? What did I notice? What does it mean?"></textarea>
+                <div class="noteFooter">
+                  <div class="live" aria-live="polite">
+                    <span class="mark" aria-hidden="true"></span>
+                    <span class="mini" id="reflectionSaveText">Autosave enabled</span>
+                  </div>
+                </div>
+              </details>
+
+              <details class="panel" id="closeCyclePanel">
+                <summary>Close the cycle (Day 36)</summary>
+                <p class="micro">Only relevant on Day 36 — but you can write anytime.</p>
+
+                <label class="noteLabel" for="cycleLessonBox">What did this cycle teach me?</label>
+                <textarea id="cycleLessonBox" rows="3" placeholder="One honest lesson…"></textarea>
+
+                <label class="noteLabel" for="cycleCarryBox">What stays (what I carry forward)?</label>
+                <textarea id="cycleCarryBox" rows="3" placeholder="One commitment…"></textarea>
+
+                <label class="noteLabel" for="cycleReleaseBox">What leaves (what I release)?</label>
+                <textarea id="cycleReleaseBox" rows="3" placeholder="One thing I stop feeding…"></textarea>
+
+                <div class="noteFooter">
+                  <div class="live" aria-live="polite">
+                    <span class="mark" aria-hidden="true"></span>
+                    <span class="mini" id="cycleSaveText">Autosave enabled</span>
+                  </div>
+
+                  <div class="controls">
+                    <button class="btn" id="exportCycleBtn" type="button">Export cycle (TXT)</button>
+                  </div>
+                </div>
+              </details>
+            </section>
+
           </section>
 
-          <!-- Desktop aside -->
           <aside class="asideCard" id="lifeAside" aria-label="Life snapshot" hidden>
             <h2>Life on Earth</h2>
             <p id="asideText">—</p>
@@ -109,7 +166,7 @@
     </article>
   </main>
 
-  <footer class="container" style="margin-top: 12px; font-size:12px; color: var(--muted);">
+  <footer class="container footer">
     © <span id="yearNow"></span> Simon Paske. All rights reserved.
   </footer>
 
@@ -124,6 +181,15 @@
       <div class="field">
         <label for="dob">Date of birth</label>
         <input type="date" id="dob" />
+      </div>
+
+      <div class="field">
+        <label>Experience</label>
+        <div class="radioRow">
+          <label><input type="radio" name="experience" value="compact" checked> Compact</label>
+          <label><input type="radio" name="experience" value="complete"> Complete</label>
+        </div>
+        <p class="micro">Compact hides extra panels. Complete shows everything.</p>
       </div>
 
       <div class="field">
@@ -144,10 +210,10 @@
       </div>
 
       <div class="field">
-        <label>Gentle continuity</label>
+        <label>Label style</label>
         <div class="radioRow">
-          <label><input type="radio" name="gentle" value="on" checked> On (Not marked)</label>
-          <label><input type="radio" name="gentle" value="off"> Off (Not done)</label>
+          <label><input type="radio" name="gentle" value="on" checked> Gentle (“Not marked”)</label>
+          <label><input type="radio" name="gentle" value="off"> Direct (“Not done”)</label>
         </div>
       </div>
 
@@ -186,8 +252,8 @@
       </div>
 
       <div class="field" id="reviewEditorWrap" hidden>
-        <label for="reviewEditor" id="reviewEditorLabel">Edit selected day</label>
-        <textarea id="reviewEditor" placeholder="Edit note..."></textarea>
+        <label for="reviewEditor">Edit selected note</label>
+        <textarea id="reviewEditor" rows="8" placeholder="Edit note..."></textarea>
 
         <div class="noteFooter">
           <div class="live" aria-live="polite">
