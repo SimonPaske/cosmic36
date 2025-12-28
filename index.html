@@ -29,6 +29,11 @@
     <nav class="headerActions" aria-label="App actions">
       <button class="topBtn" id="layoutBtn" type="button">Desktop view</button>
 
+      <button class="topBtn" id="openReview" type="button" aria-haspopup="dialog" aria-expanded="false"
+        aria-controls="reviewDialog">
+        Review
+      </button>
+
       <button class="topBtn" id="openSettings" type="button" aria-haspopup="dialog" aria-expanded="false"
         aria-controls="settingsDialog">
         Settings
@@ -75,8 +80,9 @@
             <hr class="sep" />
 
             <section aria-label="Daily note">
-              <label class="noteLabel" for="noteBox" id="notePrompt">Note</label>
-              <textarea id="noteBox" placeholder="Write one honest line."></textarea>
+              <label class="noteLabel" for="noteBox" id="notePrompt">Mindful note</label>
+              <textarea id="noteBox"
+                placeholder="What did I do? What did I notice? What will I carry forward?"></textarea>
 
               <div class="noteFooter">
                 <div class="live" id="saveStatus" aria-live="polite">
@@ -85,7 +91,8 @@
                 </div>
 
                 <div class="controls">
-                  <button class="btn" id="clearNoteBtn" type="button">Clear note</button>
+                  <button class="btn" id="insertTemplateBtn" type="button">Insert template</button>
+                  <button class="btn" id="clearNoteBtn" type="button">Clear</button>
                 </div>
               </div>
             </section>
@@ -103,7 +110,7 @@
   </main>
 
   <footer class="container" style="margin-top: 12px; font-size:12px; color: var(--muted);">
-    <span id="copyrightLine">© <span id="yearNow"></span> Cosmic 36. All rights reserved.</span>
+    © <span id="yearNow"></span> Simon Paske. All rights reserved.
   </footer>
 
   <!-- Settings dialog -->
@@ -150,12 +157,57 @@
     </div>
   </dialog>
 
+  <!-- Review dialog -->
+  <dialog id="reviewDialog" aria-labelledby="reviewTitle">
+    <div class="dialogHead">
+      <h2 id="reviewTitle">Review your notes</h2>
+      <button class="topBtn" id="closeReview" type="button">Close</button>
+    </div>
+
+    <div class="dialogBody">
+      <div class="field">
+        <label for="reviewQuery">Search</label>
+        <input id="reviewQuery" type="text" placeholder="Search your notes..." />
+      </div>
+
+      <div class="field">
+        <div class="radioRow">
+          <label><input type="radio" name="reviewScope" value="cycle" checked> This cycle</label>
+          <label><input type="radio" name="reviewScope" value="all"> All time</label>
+        </div>
+      </div>
+
+      <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" id="exportNotesBtn" type="button">Export notes (JSON)</button>
+        <button class="btn" id="exportDoneBtn" type="button">Export marks (JSON)</button>
+      </div>
+
+      <div class="field">
+        <div class="noteList" id="noteList" aria-label="Notes list"></div>
+      </div>
+
+      <div class="field" id="reviewEditorWrap" hidden>
+        <label for="reviewEditor">Edit selected day</label>
+        <textarea id="reviewEditor" placeholder="Edit note..."></textarea>
+
+        <div class="noteFooter">
+          <div class="live" aria-live="polite">
+            <span class="mark" aria-hidden="true"></span>
+            <span id="reviewSaveText">Autosave enabled</span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="jumpToTodayBtn" type="button">Jump to today</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite">Saved</div>
 
   <script src="./assets/app.js" defer></script>
 
   <script>
-    // Register SW (small inline only)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").catch(() => { });

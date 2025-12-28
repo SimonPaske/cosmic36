@@ -1,4 +1,4 @@
-const CACHE_NAME = "cosmic36-v5";
+const CACHE_NAME = "cosmic36-v6";
 
 const ASSETS = [
     "./",
@@ -30,13 +30,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
     const req = event.request;
     const url = new URL(req.url);
-
     if (url.origin !== self.location.origin) return;
 
     event.respondWith(
         caches.match(req).then((cached) => {
             if (cached) return cached;
-
             return fetch(req).then((res) => {
                 if (req.method === "GET" && res.ok) {
                     const copy = res.clone();

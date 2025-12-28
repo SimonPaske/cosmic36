@@ -1,11 +1,9 @@
-// Cosmic 36 — app.js
-// Keep this file pure JS. No HTML inside.
-
 document.addEventListener("DOMContentLoaded", () => {
     const CYCLE_DAYS = 36;
     const ANCHORS = new Set([3, 6, 9, 12, 15, 18]);
     const ECHOES = new Set([21, 24, 27, 30, 33, 36]);
 
+    // Guidance: your pattern-day guidance
     const GUIDANCE = {
         1: "Declare what you want, clearly and simply.",
         2: "Make your repetition effortless and automatic.",
@@ -45,6 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
         36: "Repeat once more, then choose what you carry forward."
     };
 
+    // Spiritual insights: authored inside the app (offline, yours)
+    // Selection is deterministic, not “random”.
     const INSIGHTS = [
         "Repetition is how attention becomes devotion — and devotion becomes a stable inner field.",
         "A ritual is a container for the nervous system: it creates safety through predictability.",
@@ -58,8 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
         "Tension and ease are information. The body is a quiet oracle."
     ];
 
-    const SETTINGS_KEY = "cosmic36_settings_v2";
-    const STORE_KEY = "cosmic36_data_v2";
+    // Storage
+    const SETTINGS_KEY = "cosmic36_settings_v3";
+    const STORE_KEY = "cosmic36_data_v3";
 
     const $ = (id) => document.getElementById(id);
 
@@ -83,7 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const notePrompt = $("notePrompt");
     const noteBox = $("noteBox");
+    const insertTemplateBtn = $("insertTemplateBtn");
     const clearNoteBtn = $("clearNoteBtn");
+    iw
     const saveStatus = $("saveStatus");
     const saveText = $("saveText");
 
@@ -102,9 +105,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const gentleRadios = [...document.querySelectorAll('input[name="gentle"]')];
     const clearCycleBtn = $("clearCycleBtn");
 
+    // Review UI
+    const reviewDialog = $("reviewDialog");
+    const openReview = $("openReview");
+    const closeReview = $("closeReview");
+    const reviewQuery = $("reviewQuery");
+    const reviewScopeRadios = [...document.querySelectorAll('input[name="reviewScope"]')];
+    const noteList = $("noteList");
+    const reviewEditorWrap = $("reviewEditorWrap");
+    const reviewEditor = $("reviewEditor");
+    const reviewSaveText = $("reviewSaveText");
+    const jumpToTodayBtn = $("jumpToTodayBtn");
+    const exportNotesBtn = $("exportNotesBtn");
+    const exportDoneBtn = $("exportDoneBtn");
+
     const toast = $("toast");
     const yearNow = $("yearNow");
-
     if (yearNow) yearNow.textContent = String(new Date().getFullYear());
 
     function showToast(msg) {
@@ -148,13 +164,31 @@ document.addEventListener("DOMContentLoaded", () => {
             : { name: "Phase 2: Receiving", desc: "Repeat and observe what returns. Let life respond." };
     }
 
-    function notePromptFor(day) {
+    // Mindful prompts (more helpful than generic notes)
+    function mindfulPrompt(day) {
         const t = getDayType(day);
-        if (day === 1) return "What are you declaring today?";
-        if (day === 2) return "How will you make this repetition effortless?";
-        if (t === "anchor") return "What action did you take today?";
-        if (t === "echo") return "What returned today?";
-        return "What did you notice today?";
+        if (day === 1) return "Declaration — write it in one clear sentence.";
+        if (day === 2) return "Make it easy — what will you repeat daily without force?";
+        if (t === "anchor") return "Anchor day — what action did you take and how did it feel in your body?";
+        if (t === "echo") return "Echo day — what returned, and what might it be teaching you?";
+        return "Light day — what did you do, notice, and carry forward?";
+    }
+
+    function mindfulTemplate(day) {
+        const t = getDayType(day);
+        if (day === 1) {
+            return "Declaration (one sentence):\n\nToday I repeat by:\n\nOne small aligned action:\n";
+        }
+        if (day === 2) {
+            return "Effortless repetition:\n\nWhat makes this easy today:\n\nMinimum version I will do no matter what:\n";
+        }
+        if (t === "anchor") {
+            return "Action taken today:\n\nBody signal (tension/ease/energy):\n\nOne thing I’ll keep repeating:\n";
+        }
+        if (t === "echo") {
+            return "What returned today:\n\nWhat it might be showing me:\n\nMy response (one clean choice):\n";
+        }
+        return "What I did (one line):\n\nWhat I noticed (one line):\n\nWhat I carry forward (one line):\n";
     }
 
     function nextSpecialDay(fromDay, set) {
@@ -168,11 +202,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function cycleIndexFromDaysLived(daysLived) {
         return Math.floor(daysLived / CYCLE_DAYS) + 1;
     }
+
     function cycleKey(dobStr, mode, cycleIndex) { return `${dobStr}|${mode}|cycle${cycleIndex}`; }
+
     function getCycle(store, dobStr, mode, cycleIndex) {
         const k = cycleKey(dobStr, mode, cycleIndex);
         return store[k] || { updatedAt: Date.now(), done: {}, notes: {} };
     }
+
     function putCycle(store, dobStr, mode, cycleIndex, cycle) {
         const k = cycleKey(dobStr, mode, cycleIndex);
         cycle.updatedAt = Date.now();
@@ -201,7 +238,11 @@ document.addEventListener("DOMContentLoaded", () => {
         daysLived: 0,
         hoursLived: 0,
         cycle: null,
-        savingTimer: null
+        savingTimer: null,
+
+        // review state
+        selectedReviewDay: null,
+        reviewAutosaveTimer: null
     };
 
     function persistSettings() {
@@ -333,43 +374,219 @@ document.addEventListener("DOMContentLoaded", () => {
         setSaveIndicator("saved");
     }
 
-    function openSettingsDialog() {
-        if (openSettings) openSettings.setAttribute("aria-expanded", "true");
-        if (settingsDialog && typeof settingsDialog.showModal === "function") {
-            settingsDialog.showModal();
-        } else if (settingsDialog) {
-            settingsDialog.setAttribute("open", "");
-        }
-        if (dobInput) dobInput.focus();
+    function openDialog(dialogEl, openerBtn) {
+        if (openerBtn) openerBtn.setAttribute("aria-expanded", "true");
+        if (dialogEl && typeof dialogEl.showModal === "function") dialogEl.showModal();
+        else if (dialogEl) dialogEl.setAttribute("open", "");
     }
 
-    function closeSettingsDialog() {
-        if (openSettings) openSettings.setAttribute("aria-expanded", "false");
-        if (settingsDialog && typeof settingsDialog.close === "function") {
-            settingsDialog.close();
-        } else if (settingsDialog) {
-            settingsDialog.removeAttribute("open");
-        }
-        if (openSettings) openSettings.focus();
+    function closeDialog(dialogEl, openerBtn) {
+        if (openerBtn) openerBtn.setAttribute("aria-expanded", "false");
+        if (dialogEl && typeof dialogEl.close === "function") dialogEl.close();
+        else if (dialogEl) dialogEl.removeAttribute("open");
+        if (openerBtn) openerBtn.focus();
     }
 
+    // -------- REVIEW --------
+    function getReviewScope() {
+        const checked = reviewScopeRadios.find(r => r.checked);
+        return checked ? checked.value : "cycle";
+    }
+
+    function buildReviewItems() {
+        if (!state.dobStr) return [];
+        const q = (reviewQuery?.value || "").trim().toLowerCase();
+        const scope = getReviewScope();
+
+        const items = [];
+        const cycleOnlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
+
+        for (const [k, cycle] of Object.entries(store)) {
+            if (!k.startsWith(`${state.dobStr}|${state.mode}|cycle`)) continue;
+            if (scope === "cycle" && k !== cycleOnlyKey) continue;
+
+            const match = k.match(/cycle(\d+)$/);
+            const cycleIndex = match ? Number(match[1]) : null;
+
+            for (const [dayStr, note] of Object.entries(cycle.notes || {})) {
+                const day = Number(dayStr);
+                const text = String(note || "").trim();
+                if (!text) continue;
+
+                const type = getDayType(day);
+                const preview = text.replace(/\s+/g, " ").slice(0, 90);
+                const hay = (preview + " " + text).toLowerCase();
+
+                if (q && !hay.includes(q)) continue;
+
+                items.push({
+                    cycleIndex,
+                    day,
+                    type,
+                    preview,
+                    full: text,
+                    storeKey: k
+                });
+            }
+        }
+
+        // sort newest cycle first, then day desc
+        items.sort((a, b) => (b.cycleIndex - a.cycleIndex) || (b.day - a.day));
+        return items;
+    }
+
+    function renderReview() {
+        if (!noteList) return;
+
+        const items = buildReviewItems();
+        if (!items.length) {
+            noteList.innerHTML = `<div class="noteItem"><div class="noteMeta"><b>No notes found</b><span>Write a note today, then review it here.</span></div><span class="badge light">—</span></div>`;
+            if (reviewEditorWrap) reviewEditorWrap.hidden = true;
+            state.selectedReviewDay = null;
+            return;
+        }
+
+        noteList.innerHTML = items.map((it, idx) => {
+            const badge = it.type;
+            const label = `${badge.toUpperCase()} • C${it.cycleIndex} D${it.day}`;
+            return `
+        <div class="noteItem" data-idx="${idx}">
+          <div class="noteMeta">
+            <b>${label}</b>
+            <span>${escapeHtml(it.preview)}${it.full.length > it.preview.length ? "…" : ""}</span>
+          </div>
+          <span class="badge ${badge}">${badge}</span>
+        </div>
+      `;
+        }).join("");
+
+        // click to edit
+        noteList.querySelectorAll(".noteItem").forEach(el => {
+            el.addEventListener("click", () => {
+                const idx = Number(el.getAttribute("data-idx"));
+                const it = items[idx];
+                openReviewEditor(it);
+            });
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function openReviewEditor(item) {
+        state.selectedReviewDay = item;
+        if (!reviewEditorWrap || !reviewEditor) return;
+        reviewEditorWrap.hidden = false;
+        reviewEditor.value = item.full || "";
+        if (reviewSaveText) reviewSaveText.textContent = "Autosave enabled";
+        setTimeout(() => reviewEditor.focus(), 0);
+    }
+
+    function scheduleReviewAutosave() {
+        if (!state.selectedReviewDay || !reviewEditor) return;
+        if (state.reviewAutosaveTimer) clearTimeout(state.reviewAutosaveTimer);
+        if (reviewSaveText) reviewSaveText.textContent = "Saving…";
+        state.reviewAutosaveTimer = setTimeout(() => {
+            const { storeKey, day } = state.selectedReviewDay;
+            const cycle = store[storeKey];
+            if (!cycle) return;
+
+            cycle.notes[String(day)] = reviewEditor.value || "";
+            cycle.updatedAt = Date.now();
+            store[storeKey] = cycle;
+            saveJSON(STORE_KEY, store);
+
+            if (reviewSaveText) reviewSaveText.textContent = "Saved ✓";
+            setTimeout(() => { if (reviewSaveText) reviewSaveText.textContent = "Autosave enabled"; }, 1000);
+
+            // keep today view in sync if editing current cycle/day
+            render();
+            renderReview();
+        }, 650);
+    }
+
+    function exportJSON(filename, payload) {
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function exportNotes() {
+        if (!state.dobStr) return alert("Set your DOB first.");
+        const items = buildReviewItems().map(i => ({
+            cycle: i.cycleIndex,
+            day: i.day,
+            type: i.type,
+            note: i.full
+        }));
+        exportJSON(`cosmic36-notes-${new Date().toISOString().slice(0, 10)}.json`, {
+            exportedAt: new Date().toISOString(),
+            dob: state.dobStr,
+            mode: state.mode,
+            scope: getReviewScope(),
+            notes: items
+        });
+        showToast("Exported notes");
+    }
+
+    function exportDone() {
+        if (!state.dobStr) return alert("Set your DOB first.");
+        const scope = getReviewScope();
+        const cycleOnlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
+
+        const out = [];
+        for (const [k, cycle] of Object.entries(store)) {
+            if (!k.startsWith(`${state.dobStr}|${state.mode}|cycle`)) continue;
+            if (scope === "cycle" && k !== cycleOnlyKey) continue;
+
+            const match = k.match(/cycle(\d+)$/);
+            const cycleIndex = match ? Number(match[1]) : null;
+
+            for (const [dayStr, val] of Object.entries(cycle.done || {})) {
+                if (val) out.push({ cycle: cycleIndex, day: Number(dayStr) });
+            }
+        }
+
+        exportJSON(`cosmic36-marks-${new Date().toISOString().slice(0, 10)}.json`, {
+            exportedAt: new Date().toISOString(),
+            dob: state.dobStr,
+            mode: state.mode,
+            scope,
+            marks: out
+        });
+        showToast("Exported marks");
+    }
+
+    // -------- MAIN RENDER --------
     function render() {
         applyLayout();
 
         const info = compute();
         if (!info) {
-            if (headerTitle) headerTitle.textContent = "Day — / 36";
-            if (headerPhase) headerPhase.textContent = "Open Settings and enter your date of birth.";
-            if (chipRow) chipRow.innerHTML = "";
-            if (bigDay) bigDay.innerHTML = `Day — <small>/ 36</small>`;
-            if (guidanceLine) guidanceLine.textContent = "—";
-            if (hintLine) hintLine.textContent = "—";
-            if (insightBox) insightBox.hidden = true;
-            if (notePrompt) notePrompt.textContent = "Note";
-            if (noteBox) noteBox.value = "";
+            headerTitle && (headerTitle.textContent = "Day — / 36");
+            headerPhase && (headerPhase.textContent = "Open Settings and enter your date of birth.");
+            chipRow && (chipRow.innerHTML = "");
+            bigDay && (bigDay.innerHTML = `Day — <small>/ 36</small>`);
+            guidanceLine && (guidanceLine.textContent = "—");
+            hintLine && (hintLine.textContent = "—");
+            insightBox && (insightBox.hidden = true);
+            notePrompt && (notePrompt.textContent = "Mindful note");
+            noteBox && (noteBox.value = "");
             setDoneUI(false);
             setCardType("light");
-            if (subLine) subLine.textContent = "One screen. One day. One note.";
+            subLine && (subLine.textContent = "One screen. One day. One note.");
             return;
         }
 
@@ -384,9 +601,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const t = getDayType(state.dayInCycle);
         const phase = getPhase(state.dayInCycle);
 
-        if (headerTitle) headerTitle.textContent = `Day ${state.dayInCycle} / 36`;
-        if (headerPhase) headerPhase.textContent = `${phase.name} • ${phase.desc}`;
-        if (bigDay) bigDay.innerHTML = `Day ${state.dayInCycle} <small>/ 36</small>`;
+        headerTitle && (headerTitle.textContent = `Day ${state.dayInCycle} / 36`);
+        headerPhase && (headerPhase.textContent = `${phase.name} • ${phase.desc}`);
+        bigDay && (bigDay.innerHTML = `Day ${state.dayInCycle} <small>/ 36</small>`);
         setCardType(t);
 
         const nextA = nextSpecialDay(state.dayInCycle, ANCHORS);
@@ -430,10 +647,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        if (notePrompt) notePrompt.textContent = notePromptFor(state.dayInCycle);
+        if (notePrompt) notePrompt.textContent = mindfulPrompt(state.dayInCycle);
+
         if (noteBox) {
             const existing = state.cycle.notes[String(state.dayInCycle)] || "";
             if (document.activeElement !== noteBox && noteBox.value !== existing) noteBox.value = existing;
+            noteBox.placeholder = mindfulTemplate(state.dayInCycle).split("\n").slice(0, 3).join("\n");
         }
 
         const done = !!state.cycle.done[String(state.dayInCycle)];
@@ -443,64 +662,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function syncSettingsUI() {
-        if (dobInput) dobInput.value = state.dobStr || "";
+        dobInput && (dobInput.value = state.dobStr || "");
         modeRadios.forEach(r => r.checked = (r.value === state.mode));
-        if (densitySelect) densitySelect.value = state.density;
+        densitySelect && (densitySelect.value = state.density);
         gentleRadios.forEach(r => r.checked = (r.value === (state.gentle ? "on" : "off")));
     }
 
-    // Events
-    if (layoutBtn) {
-        layoutBtn.addEventListener("click", () => {
-            state.layout = (state.layout === "desktop") ? "mobile" : "desktop";
-            persistSettings();
-            render();
-            showToast(state.layout === "desktop" ? "Desktop view" : "Mobile view");
-        });
-    }
+    // ---------- Events ----------
+    layoutBtn && layoutBtn.addEventListener("click", () => {
+        state.layout = (state.layout === "desktop") ? "mobile" : "desktop";
+        persistSettings();
+        render();
+        showToast(state.layout === "desktop" ? "Desktop view" : "Mobile view");
+    });
 
-    if (statusBtn) {
-        statusBtn.addEventListener("click", () => {
-            if (!state.cycle) return;
-            const done = !!state.cycle.done[String(state.dayInCycle)];
-            done ? unmarkDone() : markDone();
-        });
-    }
+    statusBtn && statusBtn.addEventListener("click", () => {
+        if (!state.cycle) return;
+        const done = !!state.cycle.done[String(state.dayInCycle)];
+        done ? unmarkDone() : markDone();
+    });
 
-    if (noteBox) {
-        noteBox.addEventListener("input", scheduleAutosave);
-        noteBox.addEventListener("blur", saveNow);
-    }
+    noteBox && noteBox.addEventListener("input", scheduleAutosave);
+    noteBox && noteBox.addEventListener("blur", saveNow);
 
-    if (clearNoteBtn) {
-        clearNoteBtn.addEventListener("click", () => {
-            if (!noteBox) return;
-            if (!confirm("Clear the note for today?")) return;
-            noteBox.value = "";
-            saveNow();
-            showToast("Cleared note");
-        });
-    }
+    insertTemplateBtn && insertTemplateBtn.addEventListener("click", () => {
+        if (!noteBox) return;
+        if (noteBox.value.trim()) {
+            if (!confirm("Replace your current note with a mindful template?")) return;
+        }
+        noteBox.value = mindfulTemplate(state.dayInCycle);
+        scheduleAutosave();
+        noteBox.focus();
+    });
 
-    if (openSettings) openSettings.addEventListener("click", openSettingsDialog);
-    if (closeSettings) closeSettings.addEventListener("click", closeSettingsDialog);
+    clearNoteBtn && clearNoteBtn.addEventListener("click", () => {
+        if (!noteBox) return;
+        if (!confirm("Clear the note for today?")) return;
+        noteBox.value = "";
+        saveNow();
+        showToast("Cleared");
+    });
 
-    if (settingsDialog) {
-        settingsDialog.addEventListener("cancel", (e) => {
-            e.preventDefault();
-            closeSettingsDialog();
-        });
-    }
+    openSettings && openSettings.addEventListener("click", () => openDialog(settingsDialog, openSettings));
+    closeSettings && closeSettings.addEventListener("click", () => closeDialog(settingsDialog, openSettings));
+    settingsDialog && settingsDialog.addEventListener("cancel", (e) => { e.preventDefault(); closeDialog(settingsDialog, openSettings); });
 
-    if (dobInput) {
-        dobInput.addEventListener("change", () => {
-            const v = dobInput.value;
-            if (!v) return;
-            state.dobStr = v;
-            persistSettings();
-            render();
-        });
-    }
+    dobInput && dobInput.addEventListener("change", () => {
+        const v = dobInput.value;
+        if (!v) return;
+        state.dobStr = v;
+        persistSettings();
+        render();
+    });
 
     modeRadios.forEach(r => r.addEventListener("change", () => {
         if (!r.checked) return;
@@ -509,13 +722,11 @@ document.addEventListener("DOMContentLoaded", () => {
         render();
     }));
 
-    if (densitySelect) {
-        densitySelect.addEventListener("change", () => {
-            state.density = densitySelect.value;
-            persistSettings();
-            render();
-        });
-    }
+    densitySelect && densitySelect.addEventListener("change", () => {
+        state.density = densitySelect.value;
+        persistSettings();
+        render();
+    });
 
     gentleRadios.forEach(r => r.addEventListener("change", () => {
         if (!r.checked) return;
@@ -524,18 +735,40 @@ document.addEventListener("DOMContentLoaded", () => {
         render();
     }));
 
-    if (clearCycleBtn) {
-        clearCycleBtn.addEventListener("click", () => {
-            const info = compute();
-            if (!info) return alert("Set your DOB first.");
-            const k = cycleKey(state.dobStr, state.mode, info.cycleIndex);
-            if (!confirm("Clear notes + marks for the current cycle on this device?")) return;
-            delete store[k];
-            saveJSON(STORE_KEY, store);
-            render();
-            showToast("Cleared");
-        });
-    }
+    clearCycleBtn && clearCycleBtn.addEventListener("click", () => {
+        const info = compute();
+        if (!info) return alert("Set your DOB first.");
+        const k = cycleKey(state.dobStr, state.mode, info.cycleIndex);
+        if (!confirm("Clear notes + marks for the current cycle on this device?")) return;
+        delete store[k];
+        saveJSON(STORE_KEY, store);
+        render();
+        showToast("Cleared");
+    });
+
+    // Review open/close
+    openReview && openReview.addEventListener("click", () => {
+        if (!state.dobStr) { openDialog(settingsDialog, openSettings); return; }
+        openDialog(reviewDialog, openReview);
+        renderReview();
+        reviewQuery && reviewQuery.focus();
+    });
+
+    closeReview && closeReview.addEventListener("click", () => closeDialog(reviewDialog, openReview));
+    reviewDialog && reviewDialog.addEventListener("cancel", (e) => { e.preventDefault(); closeDialog(reviewDialog, openReview); });
+
+    reviewQuery && reviewQuery.addEventListener("input", renderReview);
+    reviewScopeRadios.forEach(r => r.addEventListener("change", renderReview));
+
+    reviewEditor && reviewEditor.addEventListener("input", scheduleReviewAutosave);
+
+    jumpToTodayBtn && jumpToTodayBtn.addEventListener("click", () => {
+        closeDialog(reviewDialog, openReview);
+        noteBox && noteBox.focus();
+    });
+
+    exportNotesBtn && exportNotesBtn.addEventListener("click", exportNotes);
+    exportDoneBtn && exportDoneBtn.addEventListener("click", exportDone);
 
     // Swipe gestures (mobile only)
     let touch = { startX: 0, startY: 0 };
@@ -576,7 +809,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         syncSettingsUI();
         render();
-        if (!state.dobStr) openSettingsDialog();
+        if (!state.dobStr) openDialog(settingsDialog, openSettings);
     }
 
     init();
