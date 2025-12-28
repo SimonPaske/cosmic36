@@ -1,4 +1,4 @@
-const CACHE_NAME = "cosmic36-semantic-v2";
+const CACHE_NAME = "cosmic36-semantic-v3";
 
 const ASSETS = [
     "./",
