@@ -178,8 +178,7 @@
       </div>
 
       <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn" id="exportNotesBtn" type="button">Export notes (JSON)</button>
-        <button class="btn" id="exportDoneBtn" type="button">Export marks (JSON)</button>
+        <button class="btn" id="exportNotesTxtBtn" type="button">Export notes (TXT)</button>
       </div>
 
       <div class="field">
@@ -187,7 +186,7 @@
       </div>
 
       <div class="field" id="reviewEditorWrap" hidden>
-        <label for="reviewEditor">Edit selected day</label>
+        <label for="reviewEditor" id="reviewEditorLabel">Edit selected day</label>
         <textarea id="reviewEditor" placeholder="Edit note..."></textarea>
 
         <div class="noteFooter">
