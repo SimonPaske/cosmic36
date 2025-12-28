@@ -235,6 +235,7 @@ button {
     padding: 14px;
 }
 
+/* Layout */
 .layout {
     display: grid;
     grid-template-columns: 1fr;
@@ -242,10 +243,12 @@ button {
 }
 
 html[data-layout="desktop"] .layout {
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 16px;
     align-items: start;
 }
 
+/* Today card */
 .today {
     border: 1px solid var(--border);
     border-radius: 18px;
@@ -257,6 +260,11 @@ html[data-layout="desktop"] .layout {
     box-shadow: var(--shadow);
     outline: 1.5px solid var(--todayOutline);
     outline-offset: 2px;
+}
+
+html[data-layout="desktop"] .today {
+    position: sticky;
+    top: 18px;
 }
 
 .today.light::before,
@@ -382,7 +390,7 @@ html[data-layout="desktop"] .layout {
     user-select: none;
 }
 
-.sw .swipeHint b {
+.swipeHint b {
     color: color-mix(in oklab, var(--text) 92%, transparent);
 }
 
@@ -473,6 +481,14 @@ textarea::placeholder {
     white-space: nowrap;
 }
 
+.sectionTitle {
+    margin: 14px 0 8px;
+    font-size: 12px;
+    font-weight: 1000;
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+}
+
+/* Aside */
 .asideCard {
     border: 1px solid var(--border);
     background: color-mix(in oklab, var(--panel2) 80%, transparent);
@@ -519,7 +535,14 @@ textarea::placeholder {
     color: color-mix(in oklab, var(--text) 92%, transparent);
 }
 
-/* Dialog (settings) */
+.asideQuick {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+/* Dialog */
 dialog {
     border: none;
     padding: 0;
@@ -572,6 +595,7 @@ dialog::backdrop {
 }
 
 .field input[type="date"],
+.field input[type="text"],
 .field select {
     width: 100%;
     padding: 12px;
@@ -595,6 +619,13 @@ dialog::backdrop {
     transform: translateY(1px);
 }
 
+.tiny {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+/* Toast */
 .toast {
     position: fixed;
     left: 50%;
@@ -618,6 +649,7 @@ dialog::backdrop {
     transform: translateX(-50%) translateY(-2px);
 }
 
+/* Review list */
 .noteList {
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -681,204 +713,187 @@ dialog::backdrop {
     border-color: color-mix(in oklab, var(--lightSolid) 70%, transparent);
 }
 
-/* ---------- BANNERS (error/update) ---------- */
-.banner {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(10px);
-}
-
-.bannerInner {
-    max-width: 980px;
-    margin: 0 auto;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.banner.update {
-    background: color-mix(in oklab, var(--panel) 75%, transparent);
-}
-
-.banner.error {
-    background: color-mix(in oklab, #ef4444 12%, var(--panel));
-}
-
-/* ---------- NUDGE + RITUAL ---------- */
-.nudge {
+/* Pattern chip */
+.patternRow {
     margin-top: 10px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--panel2) 85%, transparent);
-    font-size: 13px;
-    color: var(--muted);
-}
-
-.ritual {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--panel) 85%, transparent);
-}
-
-.ritualRow {
     display: flex;
+    justify-content: flex-start;
+}
+
+.patternChipWrap {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
 }
 
-.breath {
-    margin-top: 10px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.breathDot {
-    width: 14px;
-    height: 14px;
+.patternChip {
+    padding: 8px 14px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--accent) 75%, transparent);
-    box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 15%, transparent);
-    animation: pulse 2s infinite ease-in-out;
-}
-
-.breathText {
+    background: rgba(40, 40, 40, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    color: #fff;
+    font-weight: 900;
     font-size: 13px;
-    color: var(--muted);
+    letter-spacing: 0.2px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(6px);
+    display: none;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: .7;
-    }
-
-    50% {
-        transform: scale(1.35);
-        opacity: 1;
-    }
+.patternChip.hasText {
+    display: inline-flex;
 }
 
-/* ---------- STACK + BIG EDITOR ---------- */
-.stack {
-    display: grid;
-    gap: 12px;
+.miniInfoBtn {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(0, 0, 0, 0.18);
+    color: #fff;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
-.bigArea {
-    min-height: 28vh;
+.miniInfoBtn:active {
+    transform: translateY(1px);
 }
 
-/* ---------- TEXT SIZE (6) ---------- */
-:root[data-text="s"] textarea {
-    font-size: 13px;
-}
-
-:root[data-text="m"] textarea {
-    font-size: 15px;
-}
-
-:root[data-text="l"] textarea {
-    font-size: 17px;
-}
-
-/* ---------- BOTTOM NAV (5) ---------- */
-.bottomNav {
+/* Tooltip */
+.tooltip {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-    display: flex;
-    gap: 8px;
-    padding: 10px 12px;
-    border-top: 1px solid var(--border);
-    background: color-mix(in oklab, var(--panel) 88%, transparent);
+    z-index: 9999;
+    max-width: min(380px, calc(100vw - 24px));
+    background: rgba(35, 35, 38, 0.95);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 14px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
-}
-
-.navBtn {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--panel2) 85%, transparent);
-    font-weight: 850;
-}
-
-@media (min-width: 860px) {
-    .bottomNav {
-        display: none;
-    }
-}
-
-/* Add space so bottom nav doesn't cover content */
-@media (max-width: 859px) {
-    body {
-        padding-bottom: 72px;
-    }
-}
-
-/* ---------- REVIEW GRID 36 (2) ---------- */
-.grid36 {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-}
-
-.cell {
-    border-radius: 14px;
-    border: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
-    background: color-mix(in oklab, var(--panel2) 85%, transparent);
-    padding: 10px 8px;
-    text-align: center;
-}
-
-.cell .num {
-    font-weight: 950;
-    font-size: 12px;
-}
-
-.cell.has {
-    outline: 2px solid color-mix(in oklab, var(--accent) 50%, transparent);
-}
-
-.cell.done {
-    box-shadow: inset 0 0 0 2px color-mix(in oklab, #10b981 45%, transparent);
-}
-
-.cell.anchor {
-    background: color-mix(in oklab, var(--anchorSolid) 12%, var(--panel2));
-}
-
-.cell.echo {
-    background: color-mix(in oklab, var(--echoSolid) 10%, var(--panel2));
-}
-
-.cell.light {
-    background: color-mix(in oklab, var(--lightSolid) 10%, var(--panel2));
-}
-
-/* ---------- CYCLE CLOSE (12) ---------- */
-.cycleClose {
-    margin-top: 14px;
     padding: 12px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--panel) 85%, transparent);
 }
 
-.tiny {
+.tooltipInner {
+    display: grid;
+    gap: 10px;
+}
+
+.tooltipTitle {
+    font-weight: 1000;
+    font-size: 14px;
+    letter-spacing: 0.2px;
+}
+
+.tooltipBody {
+    font-size: 13px;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.tooltipBody ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+}
+
+.tooltipBody li {
+    margin: 6px 0;
+}
+
+/* Collapsible details */
+.collapse {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: color-mix(in oklab, var(--panel) 88%, transparent);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.collapseSummary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.collapseSummary::-webkit-details-marker {
+    display: none;
+}
+
+.collapseTitle {
+    font-weight: 1000;
+    font-size: 12px;
+    letter-spacing: 0.2px;
+}
+
+.collapseMeta {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.collapseSummary::after {
+    content: "▾";
+    font-weight: 1000;
+    opacity: 0.75;
+    margin-left: 8px;
+}
+
+.collapse[open] .collapseSummary::after {
+    content: "▴";
+    opacity: 0.9;
+}
+
+.collapseBody {
+    padding: 12px;
+}
+
+.miniBtn {
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+@media (max-width: 420px) {
+    .miniBtn {
+        padding: 8px 9px;
+        font-size: 11px;
+    }
+}
+
+/* Footer */
+.appFooter {
+    text-align: center;
+    margin-top: 14px;
     font-size: 12px;
     color: var(--muted);
+}
+
+.footerLink {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.footerLink:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
+
+/* Tooltip paragraph formatting */
+.tooltipBody p {
+    margin: 0 0 10px;
+}
+
+.tooltipBody p:last-child {
+    margin-bottom: 0;
 }
