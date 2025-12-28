@@ -86,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const noteBox = $("noteBox");
     const insertTemplateBtn = $("insertTemplateBtn");
     const clearNoteBtn = $("clearNoteBtn");
-    iw
     const saveStatus = $("saveStatus");
     const saveText = $("saveText");
 
