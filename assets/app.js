@@ -1,17 +1,26 @@
 /* assets/app.js — FULL FILE (module)
+   Works with: <script type="module" src="./assets/app.js"></script>
+
    Includes:
-   - Works with <script type="module" src="./assets/app.js"></script>
    - Pattern ⓘ tooltip (content imported from ./infoContent.js)
    - Experience: compact hides extrasWrap, complete shows it
    - Guidance density:
        silent    -> hides guidance + hint + insight
        minimal   -> shows guidance + hint, hides spiritual insight
        supportive-> shows guidance + hint + spiritual insight
-   - Export moved to Review dialog (supports these optional buttons if present):
+   - Export moved to Review dialog (supports optional buttons if present):
        #exportNotesTxtBtn  (existing)
-       #exportCloseTxtBtn  (new optional)
-       #exportBothTxtBtn   (new optional)
+       #exportCloseTxtBtn  (optional)
+       #exportBothTxtBtn   (optional)
    - Safe if some elements are missing (no crashes)
+
+   Features:
+   ✅ Progress bar uses existing #progressBar from index.html
+   ✅ Light days get alternating classes (odd/even) based on LIGHT count only
+   ✅ Auto-mark day when user starts writing (first meaningful input)
+   ✅ Toggle Done/Marked button (second click unmarks)
+   ✅ "Close the cycle" appears only on Day 36
+   ✅ Reminders / notifications (best-effort while app is open)
 */
 
 import { PATTERN_INFO } from "./infoContent.js";
@@ -318,7 +327,12 @@ document.addEventListener("DOMContentLoaded", () => {
     layout: "mobile",
     density: "minimal", // minimal | supportive | silent
     gentle: true,
-    experience: "compact" // compact | complete
+    experience: "compact", // compact | complete
+
+    // reminders
+    remindersEnabled: false,
+    reminderKinds: "anchor_echo", // anchor_echo | anchor | echo
+    reminderTime: "09:00" // HH:MM
   });
 
   const state = {
@@ -328,6 +342,11 @@ document.addEventListener("DOMContentLoaded", () => {
     density: settings.density || "minimal",
     gentle: settings.gentle !== false,
     experience: settings.experience || "compact",
+
+    // reminders
+    remindersEnabled: !!settings.remindersEnabled,
+    reminderKinds: settings.reminderKinds || "anchor_echo",
+    reminderTime: settings.reminderTime || "09:00",
 
     dayInCycle: null,
     cycleIndex: null,
@@ -350,7 +369,11 @@ document.addEventListener("DOMContentLoaded", () => {
       layout: state.layout,
       density: state.density,
       gentle: state.gentle,
-      experience: state.experience
+      experience: state.experience,
+
+      remindersEnabled: state.remindersEnabled,
+      reminderKinds: state.reminderKinds,
+      reminderTime: state.reminderTime
     });
   }
 
@@ -366,6 +389,75 @@ document.addEventListener("DOMContentLoaded", () => {
   const bigDay = $("bigDay");
   const guidanceLine = $("guidanceLine");
   const hintLine = $("hintLine");
+
+  // reminders / notif UI (safe if missing)
+  const reminderEnabled = $("reminderEnabled");
+  const reminderKinds = $("reminderKinds");
+  const reminderTime = $("reminderTime");
+
+  // notifications UI
+  const notifPermBtn = $("notifPermBtn");
+  let testNotifBtn = $("testNotifBtn");
+  const notifStatus = $("notifStatus");
+  const notifStatusPill = $("notifStatusPill");
+  const nextReminderText = $("nextReminderText");
+  const reminderMeta = $("reminderMeta");
+  function setNotifToastFromState() {
+    if (!("Notification" in window)) {
+      showToast("Notifications not supported");
+      return;
+    }
+    const p = Notification.permission;
+    if (p === "granted") showToast("Notifications enabled ✓");
+    else if (p === "denied") showToast("Notifications blocked");
+    else showToast("Notifications: permission needed");
+  }
+
+  function ensureTestNotifButton() {
+    // If index.html doesn't have a test button yet, create one next to the permission button.
+    if (testNotifBtn || !notifPermBtn) return;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "testNotifBtn";
+    btn.className = notifPermBtn.className || "btn";
+    btn.textContent = "Test notification";
+
+    // Place right after the permission button
+    notifPermBtn.insertAdjacentElement("afterend", btn);
+
+    testNotifBtn = btn;
+
+    // Wire handler immediately (same logic as the normal handler below)
+    testNotifBtn.addEventListener("click", async () => {
+      if (!("Notification" in window)) {
+        showToast("Notifications not supported");
+        return;
+      }
+
+      // Ask permission if needed
+      if (Notification.permission === "default") {
+        const p = await Notification.requestPermission();
+        updateNotifUI();
+        if (p !== "granted") {
+          showToast("Notifications not enabled");
+          return;
+        }
+      }
+
+      if (Notification.permission !== "granted") {
+        showToast("Notifications are blocked");
+        return;
+      }
+
+      const ok = await tryShowNotification(
+        "Cosmic 36 — Test notification",
+        "If you see this, notifications are working on this device/browser."
+      );
+
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)");
+    });
+  }
 
   const insightBox = $("insightBox");
   const insightLine = $("insightLine");
@@ -383,6 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveText = $("saveText");
 
   const extrasWrap = $("extrasWrap");
+  const detailsClose = $("detailsClose"); // Close the cycle accordion wrapper
   const intentionBox = $("intentionBox");
   const reflectionBox = $("reflectionBox");
   const cycleLessonBox = $("cycleLessonBox");
@@ -421,9 +514,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const jumpToTodayBtn = $("jumpToTodayBtn");
 
   // Export buttons in review (some may not exist yet — safe)
-  const exportNotesTxtBtn = $("exportNotesTxtBtn"); // daily notes
-  const exportCloseTxtBtn = $("exportCloseTxtBtn"); // close cycle
-  const exportBothTxtBtn = $("exportBothTxtBtn"); // both
+  const exportNotesTxtBtn = $("exportNotesTxtBtn");
+  const exportCloseTxtBtn = $("exportCloseTxtBtn");
+  const exportBothTxtBtn = $("exportBothTxtBtn") || $("exportAllTxtBtn");
 
   const asideReviewBtn = $("asideReviewBtn");
   const asideSettingsBtn = $("asideSettingsBtn");
@@ -463,7 +556,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!stateDot || !statusBtn || !statusText) return;
     stateDot.classList.toggle("done", done);
     statusBtn.setAttribute("aria-pressed", String(done));
-    statusText.textContent = state.gentle ? (done ? "Marked ✓" : "Not marked") : (done ? "Done ✓" : "Not done");
+    statusText.textContent = state.gentle
+      ? (done ? "Marked ✓" : "Not marked")
+      : (done ? "Done ✓" : "Not done");
   }
 
   function setCardType(type) {
@@ -550,23 +645,110 @@ document.addEventListener("DOMContentLoaded", () => {
     state.cycle.done[String(state.dayInCycle)] = true;
     persistCycle();
     setDoneUI(true);
-    showToast("Marked ✓");
+    showToast(state.gentle ? "Marked ✓" : "Done ✓");
   }
 
   function unmarkDone() {
-    state.cycle.done[String(state.dayInCycle)] = false;
+    delete state.cycle.done[String(state.dayInCycle)];
     persistCycle();
     setDoneUI(false);
-    showToast("Unmarked");
+    showToast(state.gentle ? "Unmarked" : "Undone");
   }
+
+  // ---------- 36-day progress bar ----------
+  let progressBarEl = null;
+
+  function ensureProgressBarMount() {
+    if (progressBarEl) return;
+    progressBarEl = $("progressBar");
+  }
+
+  function renderProgressBar() {
+    if (!state.cycle) return;
+    ensureProgressBarMount();
+    if (!progressBarEl) return;
+
+    const today = state.dayInCycle || 1;
+    const frag = document.createDocumentFragment();
+
+    // IMPORTANT: alternate colors based on LIGHT days only
+    let lightIndex = 0;
+
+    for (let d = 1; d <= CYCLE_DAYS; d++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dayBtn";
+
+      const type = getDayType(d);
+
+      if (type === "light") {
+        btn.classList.add("light");
+        lightIndex += 1;
+        btn.classList.add(lightIndex % 2 ? "odd" : "even");
+      } else {
+        btn.classList.add(type); // anchor / echo
+      }
+
+      const isToday = d === today;
+      const isPast = d < today;
+      const isDone = !!state.cycle.done[String(d)];
+      const hasNote = !!(state.cycle.notes[String(d)] || "").trim();
+
+      if (isToday) btn.classList.add("today");
+      if (isPast) btn.classList.add("past");
+      if (isDone) btn.classList.add("done");
+      if (hasNote) btn.classList.add("hasNote");
+
+      btn.setAttribute(
+        "aria-label",
+        `Day ${d}${isToday ? ", today" : ""}${isDone ? ", marked" : ""}`
+      );
+
+      btn.innerHTML = `
+        <span class="dayNum">${d}</span>
+        <span class="dayDots" aria-hidden="true">
+          <span class="noteDot"></span>
+          <span class="doneDot"></span>
+        </span>
+      `;
+
+      btn.addEventListener("click", () => {
+        if (!state.cycle) return;
+        state.selectedReviewItem = { kind: "day", cycleIndex: state.cycleIndex, day: d };
+        renderReview();
+        openDialog(reviewDialog, openReview);
+      });
+
+      frag.appendChild(btn);
+    }
+
+    progressBarEl.innerHTML = "";
+    progressBarEl.appendChild(frag);
+  }
+
+  // ---------- Autosave + auto-mark ----------
+  let autoMarked = false;
 
   function scheduleNoteAutosave() {
     if (!state.cycle || !noteBox) return;
+
+    // Auto-mark when user starts writing (first meaningful input)
+    const trimmed = (noteBox.value || "").trim();
+    if (!autoMarked && trimmed.length > 3) {
+      state.cycle.done[String(state.dayInCycle)] = true;
+      persistCycle();
+      setDoneUI(true);
+      renderProgressBar();
+      autoMarked = true;
+    }
+
     if (state.saveTimer) clearTimeout(state.saveTimer);
     setSaveIndicator("saving");
+
     state.saveTimer = setTimeout(() => {
       state.cycle.notes[String(state.dayInCycle)] = noteBox.value || "";
       persistCycle();
+      renderProgressBar();
       setSaveIndicator("saved");
     }, 650);
   }
@@ -761,8 +943,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const scope = getReviewScope();
     const onlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
 
-    // For "this cycle": export only current cycle close
-    // For "all time": export close blocks for every cycle we have stored
     const keys = Object.keys(store).filter((k) => k.startsWith(`${state.dobStr}|${state.mode}|cycle`));
     const targetKeys = scope === "cycle" ? keys.filter((k) => k === onlyKey) : keys;
 
@@ -781,9 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return cb - ca;
     });
 
-    if (!sorted.length) {
-      lines.push("No close-the-cycle notes found.");
-    }
+    if (!sorted.length) lines.push("No close-the-cycle notes found.");
 
     for (const k of sorted) {
       const m = k.match(/cycle(\d+)$/);
@@ -814,10 +992,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function exportBothTXT() {
-    // One file: close notes + daily notes
     if (!state.dobStr) return alert("Set your DOB first.");
-
     const scope = getReviewScope();
+
     const lines = [];
     lines.push("COSMIC 36 — FULL EXPORT (CLOSE + DAILY NOTES)");
     lines.push(`Exported: ${new Date().toISOString()}`);
@@ -827,15 +1004,11 @@ document.addEventListener("DOMContentLoaded", () => {
     lines.push("============================================================");
     lines.push("");
 
-    // Close section
     lines.push("CLOSE THE CYCLE");
-    lines.push("");
-    lines.push("(If scope is 'All time', multiple cycles will appear.)");
     lines.push("");
     lines.push("------------------------------------------------------------");
     lines.push("");
 
-    // reuse function logic inline (avoid 2 downloads)
     const onlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
     const keys = Object.keys(store).filter((k) => k.startsWith(`${state.dobStr}|${state.mode}|cycle`));
     const targetKeys = scope === "cycle" ? keys.filter((k) => k === onlyKey) : keys;
@@ -851,7 +1024,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const cIndex = m ? Number(m[1]) : "?";
       const c = store[k];
       const close = c?.close || {};
-
       const hasAnything = !!(escapePlain(close.lesson) || escapePlain(close.carry) || escapePlain(close.release));
       if (!hasAnything) continue;
 
@@ -896,6 +1068,175 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Exported full TXT");
   }
 
+  // ---------- Reminders (best-effort while app is open) ----------
+  let reminderTimer = null;
+
+  function isReminderDay(dayInCycle) {
+    const t = getDayType(dayInCycle);
+    if (state.reminderKinds === "anchor_echo") return t === "anchor" || t === "echo";
+    if (state.reminderKinds === "anchor") return t === "anchor";
+    if (state.reminderKinds === "echo") return t === "echo";
+    return false;
+  }
+
+  function parseHHMM(hhmm) {
+    const [hh, mm] = String(hhmm || "09:00").split(":").map(Number);
+    return { hh: Number.isFinite(hh) ? hh : 9, mm: Number.isFinite(mm) ? mm : 0 };
+  }
+
+  function dateForCycleDay(dayInCycle) {
+    const dob = parseDob(state.dobStr);
+    if (!dob || state.dayInCycle == null) return null;
+
+    const now = new Date();
+    const dobDay = dayNumber(dob, state.mode);
+    const todayDay = dayNumber(now, state.mode);
+    const daysLived = todayDay - dobDay;
+    const cycleStartOffset = daysLived - (daysLived % CYCLE_DAYS);
+
+    const offsetDays = cycleStartOffset + (dayInCycle - 1);
+
+    if (state.mode === "utc") {
+      const ms = Date.UTC(dob.getFullYear(), dob.getMonth(), dob.getDate()) + offsetDays * 86400000;
+      return new Date(ms);
+    }
+
+    const d = new Date(dob.getFullYear(), dob.getMonth(), dob.getDate());
+    d.setDate(d.getDate() + offsetDays);
+    return d;
+  }
+
+  function formatWhen(d) {
+    return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+  }
+
+  function computeNextReminder() {
+    if (!state.remindersEnabled || !state.dobStr || state.dayInCycle == null) return null;
+
+    const baseDate = dateForCycleDay(state.dayInCycle);
+    if (!baseDate) return null;
+
+    const { hh, mm } = parseHHMM(state.reminderTime);
+    const now = new Date();
+
+    for (let offset = 0; offset < 72; offset++) {
+      const day = ((state.dayInCycle - 1 + offset) % CYCLE_DAYS) + 1;
+      if (!isReminderDay(day)) continue;
+
+      const d = new Date(baseDate.getTime() + offset * 86400000);
+      d.setHours(hh, mm, 0, 0);
+
+      if (d.getTime() > now.getTime()) {
+        return { when: d, dayInCycle: day, type: getDayType(day) };
+      }
+    }
+    return null;
+  }
+
+  async function tryShowNotification(title, body) {
+    try {
+      if (!("Notification" in window)) return false;
+      if (Notification.permission !== "granted") return false;
+
+      const reg = await navigator.serviceWorker?.getRegistration?.();
+      if (reg && "showNotification" in reg) {
+        await reg.showNotification(title, { body, tag: "cosmic36-reminder", renotify: false });
+        return true;
+      }
+
+      new Notification(title, { body });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function updateNotifUI() {
+    if (!notifPermBtn || !notifStatus || !notifStatusPill) return;
+    ensureTestNotifButton();
+
+    if (!("Notification" in window)) {
+      notifStatus.textContent = "Notifications aren’t supported in this browser.";
+      notifPermBtn.disabled = true;
+      notifPermBtn.textContent = "Not supported";
+      notifStatusPill.classList.remove("ok", "warn");
+      notifStatusPill.classList.add("warn");
+      return;
+    }
+
+    const p = Notification.permission;
+    if (p === "granted") {
+      notifStatus.textContent = "Notifications enabled ✓";
+      notifPermBtn.disabled = true;
+      notifPermBtn.textContent = "Enabled ✓";
+      notifStatusPill.classList.remove("warn");
+      notifStatusPill.classList.add("ok");
+    } else if (p === "denied") {
+      notifStatus.textContent = "Notifications blocked in browser settings.";
+      notifPermBtn.disabled = true;
+      notifPermBtn.textContent = "Blocked";
+      notifStatusPill.classList.remove("ok");
+      notifStatusPill.classList.add("warn");
+    } else {
+      notifStatus.textContent = "Notifications are optional — reminders still appear inside the app.";
+      notifPermBtn.disabled = false;
+      notifPermBtn.textContent = "Enable notifications";
+      notifStatusPill.classList.remove("ok", "warn");
+    }
+  }
+
+  function updateNextReminderUI() {
+    const next = computeNextReminder();
+
+    if (nextReminderText) {
+      nextReminderText.textContent = next
+        ? `Next reminder: ${next.type.toUpperCase()} • ${formatWhen(next.when)}`
+        : (state.remindersEnabled ? "Next reminder: —" : "Reminders are off.");
+    }
+
+    if (reminderMeta) {
+      if (next && state.remindersEnabled) {
+        reminderMeta.hidden = false;
+        reminderMeta.textContent = `Next: ${next.type} • ${formatWhen(next.when)}`;
+      } else {
+        reminderMeta.hidden = true;
+        reminderMeta.textContent = "";
+      }
+    }
+  }
+
+  function clearReminderTimer() {
+    if (reminderTimer) {
+      clearTimeout(reminderTimer);
+      reminderTimer = null;
+    }
+  }
+
+  function scheduleNextReminder() {
+    clearReminderTimer();
+
+    const next = computeNextReminder();
+    updateNextReminderUI();
+    if (!next) return;
+
+    const ms = next.when.getTime() - Date.now();
+    if (ms <= 0) return;
+
+    reminderTimer = setTimeout(async () => {
+      const done = !!state.cycle?.done?.[String(state.dayInCycle)];
+      const isTodayReminder = next.dayInCycle === state.dayInCycle;
+
+      if (!done && isTodayReminder) {
+        const title = next.type === "anchor" ? "Cosmic 36 — Anchor day" : "Cosmic 36 — Echo day";
+        const body = "Take 1 minute to write your note.";
+        const pushed = await tryShowNotification(title, body);
+        if (!pushed) showToast(`${next.type === "anchor" ? "Anchor" : "Echo"} day reminder`);
+      }
+
+      scheduleNextReminder();
+    }, ms);
+  }
+
   // ---------- MAIN RENDER ----------
   function render() {
     applyLayout();
@@ -903,6 +1244,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const info = compute();
     if (!info) {
+      autoMarked = false;
+
       if (headerTitle) headerTitle.textContent = "Day — / 36";
       if (headerPhase) headerPhase.textContent = "Open Settings and enter your date of birth.";
       if (chipRow) chipRow.innerHTML = "";
@@ -918,7 +1261,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (noteBox) noteBox.value = "";
       setDoneUI(false);
       setCardType("light");
+      if (detailsClose) detailsClose.hidden = true;
       if (subLine) subLine.textContent = "One screen. One day. One note.";
+
+      updateNextReminderUI();
+      scheduleNextReminder();
       return;
     }
 
@@ -938,15 +1285,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (bigDay) bigDay.innerHTML = `Day ${state.dayInCycle} <small>/ 36</small>`;
     setCardType(t);
 
-    // --- Single Next Special (anchor OR echo) ---
+    // Close the cycle only on day 36
+    if (detailsClose) detailsClose.hidden = state.dayInCycle !== 36;
+
     const nextA = nextSpecialDay(state.dayInCycle, ANCHORS);
     const nextE = nextSpecialDay(state.dayInCycle, ECHOES);
-
     const nextSpecial =
       (nextA && nextE)
-        ? (nextA.inDays <= nextE.inDays
-          ? { kind: "anchor", ...nextA }
-          : { kind: "echo", ...nextE })
+        ? (nextA.inDays <= nextE.inDays ? { kind: "anchor", ...nextA } : { kind: "echo", ...nextE })
         : (nextA ? { kind: "anchor", ...nextA } : (nextE ? { kind: "echo", ...nextE } : null));
 
     const specialChip = nextSpecial
@@ -962,7 +1308,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ].filter(Boolean).join("");
     }
 
-    // --- ONE pattern line (soonest of Day 1 or Day 18) ---
     const starts = computeNextPatternStarts(state.dobStr, state.mode);
     const startWindowToday = START_WINDOWS.has(state.dayInCycle);
 
@@ -973,7 +1318,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const soonest = (starts.day1.inDays <= starts.day18.inDays)
         ? { day: 1, ...starts.day1 }
         : { day: 18, ...starts.day18 };
-
       patternMsg = `Next pattern start: Day ${soonest.day} — ${formatYMD(soonest.date, state.mode)} (in ${soonest.inDays}d).`;
     }
 
@@ -982,10 +1326,9 @@ document.addEventListener("DOMContentLoaded", () => {
       patternLine.classList.toggle("hasText", !!patternMsg);
     }
 
-    // --- Guidance density rules ---
     const showGuidance = state.density !== "silent";
     const showHint = state.density !== "silent";
-    const showInsight = state.density === "supportive"; // IMPORTANT: minimal = no spiritual insight
+    const showInsight = state.density === "supportive";
 
     if (guidanceLine) {
       guidanceLine.style.display = showGuidance ? "block" : "none";
@@ -1014,7 +1357,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- Notes ---
     if (notePrompt) notePrompt.textContent = mindfulPrompt(state.dayInCycle);
 
     if (noteBox) {
@@ -1036,11 +1378,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cycleCarryBox && state.cycle.close) cycleCarryBox.value = state.cycle.close.carry || "";
     if (cycleReleaseBox && state.cycle.close) cycleReleaseBox.value = state.cycle.close.release || "";
 
-    // --- Done state ---
     const done = !!state.cycle.done[String(state.dayInCycle)];
     setDoneUI(done);
+    autoMarked = done;
 
+    renderProgressBar();
     renderAside();
+
+    updateNextReminderUI();
+    scheduleNextReminder();
   }
 
   function syncSettingsUI() {
@@ -1049,6 +1395,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (densitySelect) densitySelect.value = state.density;
     gentleRadios.forEach((r) => (r.checked = r.value === (state.gentle ? "on" : "off")));
     experienceRadios.forEach((r) => (r.checked = r.value === state.experience));
+
+    if (reminderEnabled) reminderEnabled.checked = !!state.remindersEnabled;
+    if (reminderKinds) reminderKinds.value = state.reminderKinds || "anchor_echo";
+    if (reminderTime) reminderTime.value = state.reminderTime || "09:00";
   }
 
   // ---------- Events ----------
@@ -1058,6 +1408,102 @@ document.addEventListener("DOMContentLoaded", () => {
       persistSettings();
       render();
       showToast(state.layout === "desktop" ? "Desktop view" : "Mobile view");
+    });
+  }
+
+  // Reminders controls
+  if (reminderEnabled) {
+    reminderEnabled.checked = !!state.remindersEnabled;
+    reminderEnabled.addEventListener("change", () => {
+      state.remindersEnabled = reminderEnabled.checked;
+      persistSettings();
+      updateNextReminderUI();
+      scheduleNextReminder();
+
+      if (state.remindersEnabled) {
+        showToast(`Reminders on • ${state.reminderTime} • ${state.reminderKinds.replace("_", " + ")}`);
+      } else {
+        showToast("Reminders off");
+      }
+    });
+  }
+
+  if (reminderKinds) {
+    reminderKinds.value = state.reminderKinds || "anchor_echo";
+    reminderKinds.addEventListener("change", () => {
+      state.reminderKinds = reminderKinds.value;
+      persistSettings();
+      updateNextReminderUI();
+      scheduleNextReminder();
+      showToast(`Reminder days: ${state.reminderKinds.replace("_", " + ")}`);
+    });
+  }
+
+  if (reminderTime) {
+    reminderTime.value = state.reminderTime || "09:00";
+    reminderTime.addEventListener("change", () => {
+      state.reminderTime = reminderTime.value || "09:00";
+      persistSettings();
+      updateNextReminderUI();
+      scheduleNextReminder();
+      showToast(`Reminder time: ${state.reminderTime}`);
+    });
+  }
+
+  if (notifPermBtn) {
+    notifPermBtn.addEventListener("click", async () => {
+      if (!("Notification" in window)) {
+        showToast("Notifications not supported");
+        return;
+      }
+
+      // If user already decided, just reflect current state + toast.
+      if (Notification.permission === "granted" || Notification.permission === "denied") {
+        updateNotifUI();
+        setNotifToastFromState();
+        return;
+      }
+
+      const p = await Notification.requestPermission();
+      updateNotifUI();
+      if (p === "granted") showToast("Notifications enabled ✓");
+      else if (p === "denied") showToast("Notifications blocked");
+      else showToast("Notifications: permission needed");
+    });
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    updateNotifUI();
+  });
+
+  if (testNotifBtn) {
+    testNotifBtn.addEventListener("click", async () => {
+      if (!("Notification" in window)) {
+        showToast("Notifications not supported");
+        return;
+      }
+
+      // Ask permission if needed
+      if (Notification.permission === "default") {
+        const p = await Notification.requestPermission();
+        updateNotifUI();
+        if (p !== "granted") {
+          showToast("Notifications not enabled");
+          return;
+        }
+      }
+
+      if (Notification.permission !== "granted") {
+        showToast("Notifications are blocked");
+        return;
+      }
+
+      const ok = await tryShowNotification(
+        "Cosmic 36 — Test notification",
+        "If you see this, notifications are working on this device/browser."
+      );
+
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)");
     });
   }
 
@@ -1071,13 +1517,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Mark done (no toggle from click)
+  // Mark done (toggle)
   if (statusBtn) {
     statusBtn.addEventListener("click", () => {
       if (!state.cycle) return;
-      const done = !!state.cycle.done[String(state.dayInCycle)];
-      if (!done) markDone();
-      else showToast("Already marked ✓ (swipe left to unmark)");
+
+      const key = String(state.dayInCycle);
+      const isDone = !!state.cycle.done[key];
+
+      if (isDone) unmarkDone();
+      else markDone();
+
+      autoMarked = !isDone;
+      renderProgressBar();
+      renderAside();
     });
   }
 
@@ -1087,6 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!state.cycle) return;
       state.cycle.notes[String(state.dayInCycle)] = noteBox.value || "";
       persistCycle();
+      renderProgressBar();
       setSaveIndicator("saved");
     });
   }
@@ -1243,16 +1697,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (exportBothTxtBtn) exportBothTxtBtn.addEventListener("click", exportBothTXT);
 
   // Aside quick buttons (desktop)
-  if (asideReviewBtn) {
-    asideReviewBtn.addEventListener("click", () => {
-      if (openReview) openReview.click();
-    });
-  }
-  if (asideSettingsBtn) {
-    asideSettingsBtn.addEventListener("click", () => {
-      if (openSettings) openSettings.click();
-    });
-  }
+  if (asideReviewBtn) asideReviewBtn.addEventListener("click", () => openReview?.click?.());
+  if (asideSettingsBtn) asideSettingsBtn.addEventListener("click", () => openSettings?.click?.());
 
   // Swipe gestures (mobile only)
   let touch = { startX: 0, startY: 0 };
@@ -1294,6 +1740,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (dx > SWIPE_X) markDone();
         else if (dx < -SWIPE_X) unmarkDone();
+
+        renderProgressBar();
+        renderAside();
       },
       { passive: true }
     );
@@ -1307,6 +1756,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     syncSettingsUI();
     render();
+
+    updateNotifUI();
+    // Create Test button if it isn't in HTML yet
+    ensureTestNotifButton();
+
+    updateNextReminderUI();
+    scheduleNextReminder();
+
     if (!state.dobStr) openDialog(settingsDialog, openSettings);
   }
 

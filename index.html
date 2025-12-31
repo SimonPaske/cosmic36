@@ -58,6 +58,21 @@
         </div>
       </header>
 
+<!-- PROGRESS (36 days) -->
+<section class="progressSection" aria-label="Cycle progress">
+  <div class="progressHead">
+    <div class="progressTitle">Cycle progress</div>
+    <div class="progressMeta" id="reminderMeta" hidden></div>
+  </div>
+  <div class="progressBar" id="progressBar" role="navigation" aria-label="Cycle day buttons"></div>
+  <div class="progressLegend" aria-hidden="true">
+    <span class="legendItem"><span class="legendDot anchor"></span>Anchor</span>
+    <span class="legendItem"><span class="legendDot echo"></span>Echo</span>
+    <span class="legendItem"><span class="legendDot light"></span>Light</span>
+    <span class="legendItem"><span class="legendDot done"></span>Marked</span>
+  </div>
+</section>
+
       <div class="cardBody">
         <div class="layout">
           <!-- LEFT -->
@@ -214,50 +229,126 @@
     </div>
 
     <div class="dialogBody">
-      <div class="field">
-        <label for="dob">Date of birth</label>
-        <input type="date" id="dob" />
-      </div>
-
-      <div class="field">
-        <label>Day boundary mode</label>
-        <div class="radioRow">
-          <label><input type="radio" name="mode" value="utc" checked> UTC-safe</label>
-          <label><input type="radio" name="mode" value="local"> Local midnight</label>
+    
+      <!-- Identity -->
+      <section class="settingsGroup" aria-label="Identity">
+        <div class="settingsGroupTitle">Identity</div>
+    
+        <div class="field">
+          <label for="dob">Date of birth</label>
+          <input type="date" id="dob" />
+          <div class="tiny">Used to calculate your 36-day cycle on this device.</div>
         </div>
-      </div>
-
-      <div class="field">
-        <label for="density">Guidance density</label>
-        <select id="density">
-          <option value="minimal">Minimal</option>
-          <option value="supportive">Supportive</option>
-          <option value="silent">Silent</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Experience</label>
-        <div class="radioRow">
-          <label><input type="radio" name="experience" value="compact"> Compact</label>
-          <label><input type="radio" name="experience" value="complete"> Complete</label>
+      </section>
+    
+      <!-- Daily rhythm -->
+      <section class="settingsGroup" aria-label="Daily rhythm">
+        <div class="settingsGroupTitle">Daily rhythm</div>
+    
+        <div class="field">
+          <label>Day boundary</label>
+          <div class="radioRow">
+            <label>
+              <input type="radio" name="mode" value="utc" checked>
+              Stable day (recommended)
+            </label>
+            <label>
+              <input type="radio" name="mode" value="local">
+              Local midnight
+            </label>
+          </div>
+          <div class="tiny">
+            Stable day won’t shift when you travel. Local midnight changes with your current timezone.
+          </div>
         </div>
+      </section>
+    
+      <!-- Writing experience -->
+      <section class="settingsGroup" aria-label="Writing experience">
+        <div class="settingsGroupTitle">Writing experience</div>
+    
+        <div class="field">
+          <label for="density">Guidance density</label>
+          <select id="density">
+            <option value="minimal">Minimal</option>
+            <option value="supportive">Supportive</option>
+            <option value="silent">Silent</option>
+          </select>
+        </div>
+    
+        <div class="field">
+          <label>Experience</label>
+          <div class="radioRow">
+            <label><input type="radio" name="experience" value="compact"> Compact</label>
+            <label><input type="radio" name="experience" value="complete"> Complete</label>
+          </div>
+          <div class="tiny">
+            Compact hides extra writing sections. Complete shows Intention, Reflection, and Close the cycle.
+          </div>
+        </div>
+    
+        <div class="field">
+          <label>Marking style</label>
+          <div class="radioRow">
+            <label><input type="radio" name="gentle" value="on" checked> Gentle (Marked / Not marked)</label>
+            <label><input type="radio" name="gentle" value="off"> Direct (Done / Not done)</label>
+          </div>
+          <div class="tiny">
+            This changes wording only — your data stays the same.
+          </div>
+        </div>
+      </section>
+    
+      <!-- Reminders -->
+      <section class="settingsGroup" aria-label="Reminders">
+        <div class="settingsGroupTitle">Reminders</div>
+    
+        <div class="field">
+          <label class="check">
+            <input type="checkbox" id="reminderEnabled">
+            Enable reminders
+          </label>
+    
+          <div class="reminderControls">
+            <select id="reminderKinds" aria-label="Reminder days">
+              <option value="anchor_echo">Anchor + Echo</option>
+              <option value="anchor">Anchor only</option>
+              <option value="echo">Echo only</option>
+            </select>
+    
+            <input id="reminderTime" type="time" value="09:00" aria-label="Reminder time">
+          </div>
+    
+          <div class="tiny" id="nextReminderText">Next reminder: —</div>
+        </div>
+    
+        <div class="field notifRow">
+          <div class="notifStatusPill" id="notifStatusPill">
+            <span class="pillDot" aria-hidden="true"></span>
+            <span id="notifStatus">Notifications are optional — reminders still appear inside the app.</span>
+          </div>
+
+          <div class="reminderControls">
+            <button class="btn" id="notifPermBtn" type="button">Enable notifications</button>
+            <button class="btn" id="testNotifBtn" type="button">Test notification</button>
+          </div>
+        </div>
+    
         <div class="tiny">
-          Compact hides extra writing sections. Complete shows Intention, Reflection, and Close the cycle.
+          Push notifications work best when the app is installed (Add to Home Screen) and notifications are allowed.
         </div>
-      </div>
-
-      <div class="field">
-        <label>Gentle continuity</label>
-        <div class="radioRow">
-          <label><input type="radio" name="gentle" value="on" checked> On (Not marked)</label>
-          <label><input type="radio" name="gentle" value="off"> Off (Not done)</label>
+      </section>
+    
+      <!-- Advanced / Danger zone -->
+      <section class="settingsGroup dangerZone" aria-label="Advanced">
+        <div class="settingsGroupTitle">Advanced</div>
+    
+        <div class="field">
+          <button class="btn dangerBtn" id="clearCycleBtn" type="button">Clear current cycle data</button>
+          <div class="tiny">Deletes notes + marks for the current cycle on this device only.</div>
         </div>
-      </div>
-
-      <div class="field">
-        <button class="btn" id="clearCycleBtn" type="button">Clear current cycle data</button>
-      </div>
+      </section>
+    
     </div>
   </dialog>
 
@@ -285,7 +376,7 @@
       <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn" id="exportNotesTxtBtn" type="button">Export notes (TXT)</button>
         <button class="btn" id="exportCloseTxtBtn" type="button">Export closing notes (TXT)</button>
-        <button class="btn" id="exportAllTxtBtn" type="button">Export notes + closing (TXT)</button>
+        <button class="btn" id="exportBothTxtBtn" type="button">Export notes + closing (TXT)</button>
       </div>
 
       <div class="field">

@@ -235,6 +235,308 @@ button {
     padding: 14px;
 }
 
+/* ------------------------------
+   Progress section (matches card style)
+--------------------------------- */
+.progressSection {
+    padding: 12px 14px 12px;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background: color-mix(in oklab, var(--panel) 88%, transparent);
+}
+
+.progressHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.progressTitle {
+    font-size: 12px;
+    font-weight: 1000;
+    letter-spacing: 0.2px;
+    color: color-mix(in oklab, var(--text) 92%, transparent);
+}
+
+.progressMeta {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--muted);
+}
+
+/* Keep your existing .progressBar grid, but make it feel tighter/softer */
+.progressBar {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(0, 1fr));
+    gap: 6px;
+    padding: 2px 0;
+}
+
+@media (max-width: 560px) {
+    .progressBar {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+}
+
+/* Legend: small, calm, “chip-like” */
+.progressLegend {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.legendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background: color-mix(in oklab, var(--panel2) 78%, transparent);
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+    background: color-mix(in oklab, var(--text) 10%, transparent);
+}
+
+.legendDot.anchor {
+    background: var(--anchorSolid);
+    border-color: var(--anchorSolid);
+}
+
+.legendDot.echo {
+    background: var(--echoSolid);
+    border-color: var(--echoSolid);
+}
+
+/* Light dot reads as “rest day” */
+.legendDot.light {
+    background: var(--lightSolid);
+    border-color: var(--lightSolid);
+}
+
+/* Marked dot uses your green */
+.legendDot.done {
+    background: #39d98a;
+    border-color: #39d98a;
+}
+
+/* ------------------------------
+   Day buttons (refined, aligned)
+--------------------------------- */
+.dayBtn {
+    position: relative;
+    height: 28px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    background: color-mix(in oklab, var(--panel2) 88%, transparent);
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .08s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+}
+
+.dayBtn:hover {
+    background: color-mix(in oklab, var(--panel2) 94%, transparent);
+}
+
+.dayBtn:active {
+    transform: scale(0.98);
+}
+
+/* Light days alternate green/blue (only when “light”) */
+.dayBtn.light.odd {
+    background: color-mix(in oklab, rgba(16, 185, 129, .22), var(--panel2));
+    border-color: color-mix(in oklab, rgba(16, 185, 129, .35), var(--border));
+}
+
+.dayBtn.light.even {
+    background: color-mix(in oklab, rgba(59, 130, 246, .18), var(--panel2));
+    border-color: color-mix(in oklab, rgba(59, 130, 246, .32), var(--border));
+}
+
+/* Pressure days */
+.dayBtn.anchor {
+    background: color-mix(in oklab, var(--anchorSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--anchorSolid) 48%, var(--border) 52%);
+}
+
+.dayBtn.echo {
+    background: color-mix(in oklab, var(--echoSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--echoSolid) 48%, var(--border) 52%);
+}
+
+/* Passed days = greyed */
+.dayBtn.past {
+    opacity: 0.55;
+    background: color-mix(in oklab, var(--panel2) 55%, var(--bg) 45%);
+    border-color: color-mix(in oklab, var(--border) 45%, transparent);
+    color: color-mix(in oklab, var(--text) 65%, transparent);
+    filter: saturate(0.6) contrast(0.95);
+}
+
+/* Keep anchor/echo hint, but still muted when past */
+.dayBtn.past.anchor,
+.dayBtn.past.echo {
+    filter: saturate(0.65);
+}
+
+/* Current day = crisp white outline */
+.dayBtn.today {
+    outline: 2px solid rgba(255, 255, 255, 0.92);
+    outline-offset: 1px;
+}
+
+/* Dots (keep your existing behavior) */
+.dayDots {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.noteDot,
+.doneDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.dayBtn.hasNote .noteDot {
+    opacity: 0.9;
+    background: color-mix(in oklab, var(--text) 75%, transparent);
+}
+
+.dayBtn.done .doneDot {
+    opacity: 0.95;
+    background: #39d98a;
+}
+
+/* 36-day progress bar */
+.progressWrap {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.progressBar {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(0, 1fr));
+    gap: 6px;
+}
+
+@media (max-width: 560px) {
+    .progressBar {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+}
+
+.dayBtn {
+    position: relative;
+    height: 28px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    background: color-mix(in oklab, var(--panel2) 88%, transparent);
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .08s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+}
+
+.dayBtn:active { transform: scale(0.98); }
+
+/* Pressure days */
+.dayBtn.anchor {
+    background: color-mix(in oklab, var(--anchorSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--anchorSolid) 48%, var(--border) 52%);
+}
+
+.dayBtn.echo {
+    background: color-mix(in oklab, var(--echoSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--echoSolid) 48%, var(--border) 52%);
+}
+
+/* Passed days = greyed */
+.dayBtn.past {
+    opacity: 0.55;
+    background: color-mix(in oklab, var(--panel2) 55%, var(--bg) 45%);
+    border-color: color-mix(in oklab, var(--border) 45%, transparent);
+    color: color-mix(in oklab, var(--text) 65%, transparent);
+    filter: saturate(0.6) contrast(0.95);
+}
+
+/* Keep anchor/echo hint, but still muted when past */
+.dayBtn.past.anchor,
+.dayBtn.past.echo {
+    filter: saturate(0.65);
+}
+
+/* Marked/done days */
+.dayBtn.done {
+    border-color: color-mix(in oklab, var(--border) 60%, transparent);
+}
+
+/* Current day = white outline */
+.dayBtn.today {
+    outline: 2px solid rgba(255, 255, 255, 0.92);
+    outline-offset: 1px;
+}
+
+.dayDots {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.noteDot,
+.doneDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.dayBtn.hasNote .noteDot {
+    opacity: 0.9;
+    background: color-mix(in oklab, var(--text) 75%, transparent);
+}
+
+/* Green dot for marked days */
+.dayBtn.done .doneDot {
+    opacity: 0.95;
+    background: #39d98a;
+}
+
 /* Layout */
 .layout {
     display: grid;
@@ -896,4 +1198,338 @@ dialog::backdrop {
 
 .tooltipBody p:last-child {
     margin-bottom: 0;
+}
+
+/* Light days: alternating calm rhythm */
+.dayBtn.light:nth-child(odd) {
+    background: color-mix(in oklab, rgba(16, 185, 129, .28), var(--panel2));
+}
+
+.dayBtn.light:nth-child(even) {
+    background: color-mix(in oklab, rgba(59, 130, 246, .22), var(--panel2));
+}
+
+/* Pressure days = clear orange */
+.dayBtn.anchor {
+    background: color-mix(in oklab, var(--anchorSolid) 35%, var(--panel2));
+    border-color: var(--anchorSolid);
+}
+
+.dayBtn.echo {
+    background: color-mix(in oklab, var(--echoSolid) 35%, var(--panel2));
+    border-color: var(--echoSolid);
+}
+
+/* Past days = muted + desaturated */
+.dayBtn.past {
+    opacity: 0.45;
+    filter: grayscale(0.4) saturate(0.6);
+}
+
+/* Today = strong clarity */
+.dayBtn.today {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Marked = calm confirmation */
+.dayBtn.done .doneDot {
+    background: #22c55e;
+}
+
+/* ==============================
+   Cycle Progress (matches app)
+============================== */
+
+.progressSection {
+    padding: 12px 14px 12px;
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background: color-mix(in oklab, var(--panel) 88%, transparent);
+}
+
+.progressHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.progressTitle {
+    font-size: 12px;
+    font-weight: 1000;
+    letter-spacing: 0.2px;
+    color: color-mix(in oklab, var(--text) 92%, transparent);
+}
+
+.progressMeta {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--muted);
+}
+
+.progressBar {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(0, 1fr));
+    gap: 6px;
+    padding: 2px 0;
+}
+
+@media (max-width: 560px) {
+    .progressBar {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+}
+
+.dayBtn {
+    position: relative;
+    height: 28px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    background: color-mix(in oklab, var(--panel2) 88%, transparent);
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .08s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+}
+
+.dayBtn:hover {
+    background: color-mix(in oklab, var(--panel2) 94%, transparent);
+}
+
+.dayBtn:active {
+    transform: scale(0.98);
+}
+
+/* Light days = calm alternating rhythm */
+.dayBtn.light.odd {
+    background: color-mix(in oklab, rgba(16, 185, 129, .22), var(--panel2));
+    border-color: color-mix(in oklab, rgba(16, 185, 129, .35), var(--border));
+}
+
+.dayBtn.light.even {
+    background: color-mix(in oklab, rgba(59, 130, 246, .18), var(--panel2));
+    border-color: color-mix(in oklab, rgba(59, 130, 246, .32), var(--border));
+}
+
+/* Pressure days */
+.dayBtn.anchor {
+    background: color-mix(in oklab, var(--anchorSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--anchorSolid) 48%, var(--border) 52%);
+}
+
+.dayBtn.echo {
+    background: color-mix(in oklab, var(--echoSolid) 22%, var(--panel2) 78%);
+    border-color: color-mix(in oklab, var(--echoSolid) 48%, var(--border) 52%);
+}
+
+/* Passed days */
+.dayBtn.past {
+    opacity: 0.55;
+    background: color-mix(in oklab, var(--panel2) 55%, var(--bg) 45%);
+    border-color: color-mix(in oklab, var(--border) 45%, transparent);
+    color: color-mix(in oklab, var(--text) 65%, transparent);
+    filter: saturate(0.6) contrast(0.95);
+}
+
+/* Current day outline */
+.dayBtn.today {
+    outline: 2px solid rgba(255, 255, 255, 0.92);
+    outline-offset: 1px;
+}
+
+.dayDots {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.noteDot,
+.doneDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.dayBtn.hasNote .noteDot {
+    opacity: 0.9;
+    background: color-mix(in oklab, var(--text) 75%, transparent);
+}
+
+.dayBtn.done .doneDot {
+    opacity: 0.95;
+    background: #39d98a;
+}
+
+/* Legend */
+.progressLegend {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.legendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background: color-mix(in oklab, var(--panel2) 78%, transparent);
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text) 18%, transparent);
+    background: color-mix(in oklab, var(--text) 10%, transparent);
+}
+
+.legendDot.anchor {
+    background: var(--anchorSolid);
+    border-color: var(--anchorSolid);
+}
+
+.legendDot.echo {
+    background: var(--echoSolid);
+    border-color: var(--echoSolid);
+}
+
+.legendDot.light {
+    background: var(--lightSolid);
+    border-color: var(--lightSolid);
+}
+
+.legendDot.done {
+    background: #39d98a;
+    border-color: #39d98a;
+}
+.settingsGroup {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 14px;
+    background: color-mix(in oklab, var(--panel2) 85%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 65%, transparent);
+}
+
+.settingsGroupTitle {
+    font-size: 12px;
+    font-weight: 1000;
+    margin-bottom: 8px;
+    color: color-mix(in oklab, var(--text) 90%, transparent);
+}
+
+.dangerZone {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+}
+
+/* ===== Settings grouping + notifications UI ===== */
+
+.settingsGroup {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 16px;
+    background: color-mix(in oklab, var(--panel2) 86%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.settingsGroupTitle {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .02em;
+    margin-bottom: 10px;
+    color: color-mix(in oklab, var(--text) 88%, transparent);
+}
+
+.reminderControls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.notifRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.notifStatusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
+    background: color-mix(in oklab, var(--panel) 78%, transparent);
+    max-width: 100%;
+}
+
+.pillDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--text) 35%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.notifStatusPill.ok .pillDot {
+    background: var(--ok);
+    border-color: color-mix(in oklab, var(--ok) 65%, var(--border) 35%);
+}
+
+.notifStatusPill.warn .pillDot {
+    background: color-mix(in oklab, var(--anchorSolid) 85%, transparent);
+    border-color: color-mix(in oklab, var(--anchorSolid) 55%, var(--border) 45%);
+}
+
+.dangerZone {
+    border-style: dashed;
+}
+
+.dangerBtn {
+    border-color: color-mix(in oklab, var(--anchorSolid) 55%, var(--border) 45%);
+    background: color-mix(in oklab, var(--anchorSolid) 10%, var(--panel2) 90%);
+}
+
+.reminderControls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.reminderControls>* {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 520px) {
+
+    .reminderControls select,
+    .reminderControls input[type="time"] {
+        flex: 1 1 140px;
+        min-width: 140px;
+    }
 }
