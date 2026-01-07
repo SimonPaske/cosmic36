@@ -1,416 +1,559 @@
-<!doctype html>
-<html lang="en" data-layout="mobile" data-experience="compact">
-
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cosmic 36 — Today</title>
-
+<!DOCTYPE html>
+<html data-experience="compact" data-layout="mobile" lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Cosmic 36 &mdash; Today
+  </title>
   <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Cosmic 36">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-
-  <link rel="stylesheet" href="./assets/style.css" />
-</head>
-
-<body>
-  <div class="aura" aria-hidden="true"></div>
-
+  <link href="./manifest.webmanifest" rel="manifest"/>
+  <meta content="#0b0b0f" media="(prefers-color-scheme: dark)" name="theme-color"/>
+  <meta content="#ffffff" media="(prefers-color-scheme: light)" name="theme-color"/>
+  <meta content="yes" name="apple-mobile-web-app-capable"/>
+  <meta content="Cosmic 36" name="apple-mobile-web-app-title"/>
+  <link href="./icons/icon-192.png" rel="apple-touch-icon"/>
+  <link href="./assets/style.css" rel="stylesheet">
+  </link>
+ </head>
+ <body>
+  <div aria-hidden="true" class="aura">
+  </div>
   <header class="container appHeader">
-    <div class="brand">
-      <h1>Cosmic 36 — Today</h1>
-      <p id="subLine">One screen. One day. One note.</p>
-    </div>
-
-    <nav class="headerActions" aria-label="App actions">
-      <button class="topBtn" id="layoutBtn" type="button">Desktop view</button>
-
-      <button class="topBtn" id="openReview" type="button" aria-haspopup="dialog" aria-expanded="false"
-        aria-controls="reviewDialog">
-        Review notes
-      </button>
-
-      <button class="topBtn" id="openSettings" type="button" aria-haspopup="dialog" aria-expanded="false"
-        aria-controls="settingsDialog">
-        Settings
-      </button>
-    </nav>
+   <div class="brand">
+    <h1>
+     Cosmic 36 &mdash; Today
+    </h1>
+    <p id="subLine">
+     One screen. One day. One note.
+    </p>
+   </div>
+   <nav aria-label="App actions" class="headerActions">
+    <button class="topBtn" id="layoutBtn" type="button">
+     Desktop view
+    </button>
+    <button aria-controls="reviewDialog" aria-expanded="false" aria-haspopup="dialog" class="topBtn" id="openReview" type="button">
+     Review notes
+    </button>
+    <button aria-controls="settingsDialog" aria-expanded="false" aria-haspopup="dialog" class="topBtn" id="openSettings" type="button">
+     Settings
+    </button>
+   </nav>
   </header>
-
   <main class="container">
-    <article class="card" aria-label="Today overview">
-      <header class="cardHeader">
-        <h2 id="headerTitle">Day — / 36</h2>
-        <p id="headerPhase">Open Settings and enter your date of birth.</p>
-
-        <div class="chips" id="chipRow" aria-label="Today badges"></div>
-
-        <!-- Pattern start callout row -->
-        <div class="patternRow" aria-label="Pattern start row">
-          <div class="patternChipWrap">
-            <div class="patternChip" id="patternLine"></div>
-            <button class="miniInfoBtn" id="patternInfoBtn" type="button" aria-label="Pattern info">ⓘ</button>
-          </div>
-        </div>
-      </header>
-
-<!-- PROGRESS (36 days) -->
-<section class="progressSection" aria-label="Cycle progress">
-  <div class="progressHead">
-    <div class="progressTitle">Cycle progress</div>
-    <div class="progressMeta" id="reminderMeta" hidden></div>
-  </div>
-  <div class="progressBar" id="progressBar" role="navigation" aria-label="Cycle day buttons"></div>
-  <div class="progressLegend" aria-hidden="true">
-    <span class="legendItem"><span class="legendDot anchor"></span>Anchor</span>
-    <span class="legendItem"><span class="legendDot echo"></span>Echo</span>
-    <span class="legendItem"><span class="legendDot light"></span>Light</span>
-    <span class="legendItem"><span class="legendDot done"></span>Marked</span>
-  </div>
-</section>
-
-      <div class="cardBody">
-        <div class="layout">
-          <!-- LEFT -->
-          <section aria-label="Today guidance and writing">
-            <section class="today light" id="todayCard" aria-label="Today guidance">
-              <header class="todayTop">
-                <h3 id="bigDay">Day — <small>/ 36</small></h3>
-
-                <button class="stateBtn" id="statusBtn" type="button" aria-pressed="false">
-                  <span class="stateDot" id="stateDot" aria-hidden="true"></span>
-                  <span id="statusText">Not marked</span>
-                </button>
-              </header>
-
-              <p class="guidance" id="guidanceLine">—</p>
-              <p class="hint" id="hintLine">—</p>
-
-              <!-- Minimal guidance = insight box stays hidden unless Supportive density -->
-              <aside class="insight" id="insightBox" aria-label="Spiritual insight" hidden>
-                <h4>Spiritual insight for today</h4>
-                <p id="insightLine">—</p>
-              </aside>
-
-              <p class="swipeHint" id="swipeHint">
-                <span><b>Swipe right</b> to mark</span>
-                <span><b>Swipe left</b> to unmark</span>
-              </p>
-            </section>
-
-            <hr class="sep" />
-
-            <section aria-label="Daily note">
-              <label class="noteLabel" for="noteBox" id="notePrompt">Mindful note</label>
-              <textarea id="noteBox" rows="6"
-                placeholder="What did I do? What did I notice? What will I carry forward?"></textarea>
-
-              <div class="noteFooter">
-                <div class="live" id="saveStatus" aria-live="polite">
-                  <span class="mark" aria-hidden="true"></span>
-                  <span id="saveText">Autosave enabled</span>
-                </div>
-
-                <div class="controls">
-                  <button class="btn" id="expandBtn" type="button" aria-expanded="false">Expand</button>
-                  <button class="btn" id="insertTemplateBtn" type="button">Insert template</button>
-                  <button class="btn" id="clearNoteBtn" type="button">Clear</button>
-                </div>
-              </div>
-            </section>
-
-            <!-- COMPLETE WRITING (collapsible) -->
-            <section id="extrasWrap" aria-label="Complete writing sections" hidden>
-              <div class="sectionTitle">Complete sections</div>
-
-              <!-- INTENTION -->
-              <details class="collapse" id="detailsIntention">
-                <summary class="collapseSummary">
-                  <span class="collapseTitle">Intention (morning) — what I will repeat + observe</span>
-                  <span class="collapseMeta muted" id="intentionMeta">Optional</span>
-                </summary>
-
-                <div class="collapseBody">
-                  <label class="noteLabel" for="intentionBox">Intention</label>
-                  <textarea id="intentionBox" rows="4" placeholder="One line intention..."></textarea>
-
-                  <div class="noteFooter">
-                    <div class="live" aria-live="polite">
-                      <span class="mark" aria-hidden="true"></span>
-                      <span id="intentionSaveText">Autosave enabled</span>
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <!-- REFLECTION -->
-              <details class="collapse" id="detailsReflection">
-                <summary class="collapseSummary">
-                  <span class="collapseTitle">Reflection (evening) — what returned + meaning</span>
-                  <span class="collapseMeta muted" id="reflectionMeta">Optional</span>
-                </summary>
-
-                <div class="collapseBody">
-                  <label class="noteLabel" for="reflectionBox">Reflection</label>
-                  <textarea id="reflectionBox" rows="5" placeholder="What returned? What did I notice?"></textarea>
-
-                  <div class="noteFooter">
-                    <div class="live" aria-live="polite">
-                      <span class="mark" aria-hidden="true"></span>
-                      <span id="reflectionSaveText">Autosave enabled</span>
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <!-- CLOSE THE CYCLE -->
-              <details class="collapse" id="detailsClose">
-                <summary class="collapseSummary">
-                  <span class="collapseTitle">Close the cycle</span>
-                  <span class="collapseMeta muted">Optional</span>
-                </summary>
-
-                <div class="collapseBody">
-                  <p class="tiny">
-                    Capture the lesson and carry the clean signal forward.
-                  </p>
-
-                  <label class="noteLabel" for="cycleLessonBox">What did this cycle teach me?</label>
-                  <textarea id="cycleLessonBox" rows="4" placeholder="One honest lesson..."></textarea>
-
-                  <label class="noteLabel" for="cycleCarryBox">What stays (what I carry forward)?</label>
-                  <textarea id="cycleCarryBox" rows="4" placeholder="One commitment..."></textarea>
-
-                  <label class="noteLabel" for="cycleReleaseBox">What leaves (what I release)?</label>
-                  <textarea id="cycleReleaseBox" rows="4" placeholder="One thing I stop feeding..."></textarea>
-
-                  <div class="noteFooter">
-                    <div class="live" aria-live="polite">
-                      <span class="mark" aria-hidden="true"></span>
-                      <span id="cycleSaveText">Autosave enabled</span>
-                    </div>
-                  </div>
-                </div>
-              </details>
-            </section>
-          </section>
-
-          <!-- RIGHT (Desktop aside) -->
-          <aside class="asideCard" id="lifeAside" aria-label="Life snapshot" hidden>
-            <h2>Life on Earth</h2>
-            <p id="asideText">—</p>
-            <div class="kv" id="kv"></div>
-
-            <div class="asideQuick">
-              <button class="btn" id="asideReviewBtn" type="button">Review notes</button>
-              <button class="btn" id="asideSettingsBtn" type="button">Settings</button>
-            </div>
-          </aside>
-        </div>
+   <article aria-label="Today overview" class="card">
+    <header class="cardHeader">
+     <h2 id="headerTitle">
+      Day &mdash; / 36
+     </h2>
+     <p id="headerPhase">
+      Open Settings and enter your date of birth.
+     </p>
+     <div aria-label="Today badges" class="chips" id="chipRow">
+     </div>
+     <!-- Pattern start callout row -->
+     <div aria-label="Pattern start row" class="patternRow">
+      <div class="patternChipWrap">
+       <div class="patternChip" id="patternLine">
+       </div>
+       <button aria-label="Pattern info" class="miniInfoBtn" id="patternInfoBtn" type="button">
+        ⓘ
+       </button>
       </div>
-    </article>
-  </main>
-
-  <footer class="container appFooter">
-    © <span id="yearNow"></span>
-    <a class="footerLink" href="https://paske-style.com" target="_blank" rel="noopener">Paske STYLE</a><br>
-    Cosmic 36
-  </footer>
-
-  <!-- SETTINGS -->
-  <dialog id="settingsDialog" aria-labelledby="settingsTitle">
-    <div class="dialogHead">
-      <h2 id="settingsTitle">Settings</h2>
-      <button class="topBtn" id="closeSettings" type="button">Close</button>
-    </div>
-
-    <div class="dialogBody">
-    
-      <!-- Identity -->
-      <section class="settingsGroup" aria-label="Identity">
-        <div class="settingsGroupTitle">Identity</div>
-    
-        <div class="field">
-          <label for="dob">Date of birth</label>
-          <input type="date" id="dob" />
-          <div class="tiny">Used to calculate your 36-day cycle on this device.</div>
-        </div>
-      </section>
-    
-      <!-- Daily rhythm -->
-      <section class="settingsGroup" aria-label="Daily rhythm">
-        <div class="settingsGroupTitle">Daily rhythm</div>
-    
-        <div class="field">
-          <label>Day boundary</label>
-          <div class="radioRow">
-            <label>
-              <input type="radio" name="mode" value="utc" checked>
-              Stable day (recommended)
-            </label>
-            <label>
-              <input type="radio" name="mode" value="local">
-              Local midnight
-            </label>
-          </div>
-          <div class="tiny">
-            Stable day won’t shift when you travel. Local midnight changes with your current timezone.
-          </div>
-        </div>
-      </section>
-    
-      <!-- Writing experience -->
-      <section class="settingsGroup" aria-label="Writing experience">
-        <div class="settingsGroupTitle">Writing experience</div>
-    
-        <div class="field">
-          <label for="density">Guidance density</label>
-          <select id="density">
-            <option value="minimal">Minimal</option>
-            <option value="supportive">Supportive</option>
-            <option value="silent">Silent</option>
-          </select>
-        </div>
-    
-        <div class="field">
-          <label>Experience</label>
-          <div class="radioRow">
-            <label><input type="radio" name="experience" value="compact"> Compact</label>
-            <label><input type="radio" name="experience" value="complete"> Complete</label>
-          </div>
-          <div class="tiny">
-            Compact hides extra writing sections. Complete shows Intention, Reflection, and Close the cycle.
-          </div>
-        </div>
-    
-        <div class="field">
-          <label>Marking style</label>
-          <div class="radioRow">
-            <label><input type="radio" name="gentle" value="on" checked> Gentle (Marked / Not marked)</label>
-            <label><input type="radio" name="gentle" value="off"> Direct (Done / Not done)</label>
-          </div>
-          <div class="tiny">
-            This changes wording only — your data stays the same.
-          </div>
-        </div>
-      </section>
-    
-      <!-- Reminders -->
-      <section class="settingsGroup" aria-label="Reminders">
-        <div class="settingsGroupTitle">Reminders</div>
-    
-        <div class="field">
-          <label class="check">
-            <input type="checkbox" id="reminderEnabled">
-            Enable reminders
-          </label>
-    
-          <div class="reminderControls">
-            <select id="reminderKinds" aria-label="Reminder days">
-              <option value="anchor_echo">Anchor + Echo</option>
-              <option value="anchor">Anchor only</option>
-              <option value="echo">Echo only</option>
-            </select>
-    
-            <input id="reminderTime" type="time" value="09:00" aria-label="Reminder time">
-          </div>
-    
-          <div class="tiny" id="nextReminderText">Next reminder: —</div>
-        </div>
-    
-        <div class="field notifRow">
-          <div class="notifStatusPill" id="notifStatusPill">
-            <span class="pillDot" aria-hidden="true"></span>
-            <span id="notifStatus">Notifications are optional — reminders still appear inside the app.</span>
-          </div>
-
-          <div class="reminderControls">
-            <button class="btn" id="notifPermBtn" type="button">Enable notifications</button>
-            <button class="btn" id="testNotifBtn" type="button">Test notification</button>
-          </div>
-        </div>
-    
-        <div class="tiny">
-          Push notifications work best when the app is installed (Add to Home Screen) and notifications are allowed.
-        </div>
-      </section>
-    
-      <!-- Advanced / Danger zone -->
-      <section class="settingsGroup dangerZone" aria-label="Advanced">
-        <div class="settingsGroupTitle">Advanced</div>
-    
-        <div class="field">
-          <button class="btn dangerBtn" id="clearCycleBtn" type="button">Clear current cycle data</button>
-          <div class="tiny">Deletes notes + marks for the current cycle on this device only.</div>
-        </div>
-      </section>
-    
-    </div>
-  </dialog>
-
-  <!-- REVIEW -->
-  <dialog id="reviewDialog" aria-labelledby="reviewTitle">
-    <div class="dialogHead">
-      <h2 id="reviewTitle">Review your notes</h2>
-      <button class="topBtn" id="closeReview" type="button">Close</button>
-    </div>
-
-    <div class="dialogBody">
-      <div class="field">
-        <label for="reviewQuery">Search</label>
-        <input id="reviewQuery" type="text" placeholder="Search your notes..." />
+     </div>
+    </header>
+    <!-- PROGRESS (36 days) -->
+    <section aria-label="Cycle progress" class="progressSection">
+     <div class="progressHead">
+      <div class="progressTitle">
+       Cycle progress
       </div>
-
-      <div class="field">
-        <div class="radioRow">
-          <label><input type="radio" name="reviewScope" value="cycle" checked> This cycle</label>
-          <label><input type="radio" name="reviewScope" value="all"> All time</label>
-        </div>
+      <div class="progressMeta" hidden="" id="reminderMeta">
       </div>
-
-      <!-- EXPORTS MOVED HERE -->
-      <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn" id="exportNotesTxtBtn" type="button">Export notes (TXT)</button>
-        <button class="btn" id="exportCloseTxtBtn" type="button">Export closing notes (TXT)</button>
-        <button class="btn" id="exportBothTxtBtn" type="button">Export notes + closing (TXT)</button>
-      </div>
-
-      <div class="field">
-        <div class="noteList" id="noteList" aria-label="Notes list"></div>
-      </div>
-
-      <div class="field" id="reviewEditorWrap" hidden>
-        <label for="reviewEditor">Edit selected note</label>
-        <textarea id="reviewEditor" rows="8" placeholder="Edit note..."></textarea>
-
+     </div>
+     <div aria-label="Cycle day buttons" class="progressBar" id="progressBar" role="navigation">
+     </div>
+     <div aria-hidden="true" class="progressLegend">
+      <span class="legendItem">
+       <span class="legendDot anchor">
+       </span>
+       Anchor
+      </span>
+      <span class="legendItem">
+       <span class="legendDot echo">
+       </span>
+       Echo
+      </span>
+      <span class="legendItem">
+       <span class="legendDot light">
+       </span>
+       Light
+      </span>
+      <span class="legendItem">
+       <span class="legendDot done">
+       </span>
+       Marked
+      </span>
+     </div>
+    </section>
+    <div class="cardBody">
+     <div class="layout">
+      <!-- LEFT -->
+      <section aria-label="Today guidance and writing">
+       <section aria-label="Today guidance" class="today light" id="todayCard">
+        <header class="todayTop">
+         <h3 id="bigDay">
+          Day &mdash;
+          <small>
+           / 36
+          </small>
+         </h3>
+         <button aria-pressed="false" class="stateBtn" id="statusBtn" type="button">
+          <span aria-hidden="true" class="stateDot" id="stateDot">
+          </span>
+          <span id="statusText">
+           Not marked
+          </span>
+         </button>
+        </header>
+        <p class="guidance" id="guidanceLine">
+         &mdash;
+        </p>
+        <p class="hint" id="hintLine">
+         &mdash;
+        </p>
+        <!-- Minimal guidance = insight box stays hidden unless Supportive density -->
+        <aside aria-label="Spiritual insight" class="insight" hidden="" id="insightBox">
+         <h4>
+          Spiritual insight for today
+         </h4>
+         <p id="insightLine">
+          &mdash;
+         </p>
+        </aside>
+        <p class="swipeHint" id="swipeHint">
+         <span>
+          <b>
+           Swipe right
+          </b>
+          to mark
+         </span>
+         <span>
+          <b>
+           Swipe left
+          </b>
+          to unmark
+         </span>
+        </p>
+       </section>
+       <hr class="sep"/>
+       <section aria-label="Daily note">
+        <label class="noteLabel" for="noteBox" id="notePrompt">
+         Mindful note
+        </label>
+        <textarea id="noteBox" placeholder="What did I do? What did I notice? What will I carry forward?" rows="6"></textarea>
         <div class="noteFooter">
-          <div class="live" aria-live="polite">
-            <span class="mark" aria-hidden="true"></span>
-            <span id="reviewSaveText">Autosave enabled</span>
-          </div>
-          <div class="controls">
-            <button class="btn" id="jumpToTodayBtn" type="button">Jump to today</button>
-          </div>
+         <div aria-live="polite" class="live" id="saveStatus">
+          <span aria-hidden="true" class="mark">
+          </span>
+          <span id="saveText">
+           Autosave enabled
+          </span>
+         </div>
+         <div class="controls">
+          <button aria-expanded="false" class="btn" id="expandBtn" type="button">
+           Expand
+          </button>
+          <button class="btn" id="insertTemplateBtn" type="button">
+           Insert template
+          </button>
+          <button class="btn" id="clearNoteBtn" type="button">
+           Clear
+          </button>
+         </div>
         </div>
-      </div>
+       </section>
+       <!-- COMPLETE WRITING (collapsible) -->
+       <section aria-label="Complete writing sections" hidden="" id="extrasWrap">
+        <div class="sectionTitle">
+         Complete sections
+        </div>
+        <!-- INTENTION -->
+        <details class="collapse" id="detailsIntention">
+         <summary class="collapseSummary">
+          <span class="collapseTitle">
+           Intention (morning) &mdash; what I will repeat + observe
+          </span>
+          <span class="collapseMeta muted" id="intentionMeta">
+           Optional
+          </span>
+         </summary>
+         <div class="collapseBody">
+          <label class="noteLabel" for="intentionBox">
+           Intention
+          </label>
+          <textarea id="intentionBox" placeholder="One line intention..." rows="4"></textarea>
+          <div class="noteFooter">
+           <div aria-live="polite" class="live">
+            <span aria-hidden="true" class="mark">
+            </span>
+            <span id="intentionSaveText">
+             Autosave enabled
+            </span>
+           </div>
+          </div>
+         </div>
+        </details>
+        <!-- REFLECTION -->
+        <details class="collapse" id="detailsReflection">
+         <summary class="collapseSummary">
+          <span class="collapseTitle">
+           Reflection (evening) &mdash; what returned + meaning
+          </span>
+          <span class="collapseMeta muted" id="reflectionMeta">
+           Optional
+          </span>
+         </summary>
+         <div class="collapseBody">
+          <label class="noteLabel" for="reflectionBox">
+           Reflection
+          </label>
+          <textarea id="reflectionBox" placeholder="What returned? What did I notice?" rows="5"></textarea>
+          <div class="noteFooter">
+           <div aria-live="polite" class="live">
+            <span aria-hidden="true" class="mark">
+            </span>
+            <span id="reflectionSaveText">
+             Autosave enabled
+            </span>
+           </div>
+          </div>
+         </div>
+        </details>
+        <!-- CLOSE THE CYCLE -->
+        <details class="collapse" id="detailsClose">
+         <summary class="collapseSummary">
+          <span class="collapseTitle">
+           Close the cycle
+          </span>
+          <span class="collapseMeta muted">
+           Optional
+          </span>
+         </summary>
+         <div class="collapseBody">
+          <p class="tiny">
+           Capture the lesson and carry the clean signal forward.
+          </p>
+          <label class="noteLabel" for="cycleLessonBox">
+           What did this cycle teach me?
+          </label>
+          <textarea id="cycleLessonBox" placeholder="One honest lesson..." rows="4"></textarea>
+          <label class="noteLabel" for="cycleCarryBox">
+           What stays (what I carry forward)?
+          </label>
+          <textarea id="cycleCarryBox" placeholder="One commitment..." rows="4"></textarea>
+          <label class="noteLabel" for="cycleReleaseBox">
+           What leaves (what I release)?
+          </label>
+          <textarea id="cycleReleaseBox" placeholder="One thing I stop feeding..." rows="4"></textarea>
+          <div class="noteFooter">
+           <div aria-live="polite" class="live">
+            <span aria-hidden="true" class="mark">
+            </span>
+            <span id="cycleSaveText">
+             Autosave enabled
+            </span>
+           </div>
+          </div>
+         </div>
+        </details>
+       </section>
+      </section>
+      <!-- RIGHT (Desktop aside) -->
+      <aside aria-label="Life snapshot" class="asideCard" hidden="" id="lifeAside">
+       <h2>
+        Life on Earth
+       </h2>
+       <p id="asideText">
+        &mdash;
+       </p>
+       <div class="kv" id="kv">
+       </div>
+       <div class="asideQuick">
+        <button class="btn" id="asideReviewBtn" type="button">
+         Review notes
+        </button>
+        <button class="btn" id="asideSettingsBtn" type="button">
+         Settings
+        </button>
+       </div>
+      </aside>
+     </div>
     </div>
+   </article>
+  </main>
+  <footer class="container appFooter">
+   &copy;
+   <span id="yearNow">
+   </span>
+   <a class="footerLink" href="https://paske-style.com" rel="noopener" target="_blank">
+    Paske STYLE
+   </a>
+   <br/>
+   Cosmic 36
+  </footer>
+  <!-- SETTINGS -->
+  <dialog aria-labelledby="settingsTitle" id="settingsDialog">
+   <div class="dialogHead">
+    <h2 id="settingsTitle">
+     Settings
+    </h2>
+    <button class="topBtn" id="closeSettings" type="button">
+     Close
+    </button>
+   </div>
+   <div class="dialogBody">
+    <!-- Identity -->
+    <section aria-label="Identity" class="settingsGroup">
+     <div class="settingsGroupTitle">
+      Identity
+     </div>
+     <div class="field">
+      <label for="dob">
+       Date of birth
+      </label>
+      <input id="dob" type="date"/>
+      <div class="tiny">
+       Used to calculate your 36-day cycle on this device.
+      </div>
+     </div>
+    </section>
+    <!-- Daily rhythm -->
+    <section aria-label="Daily rhythm" class="settingsGroup">
+     <div class="settingsGroupTitle">
+      Daily rhythm
+     </div>
+     <div class="field">
+      <label>
+       Day boundary
+      </label>
+      <div class="radioRow">
+       <label>
+        <input checked="" name="mode" type="radio" value="utc"/>
+        Stable day (recommended)
+       </label>
+       <label>
+        <input name="mode" type="radio" value="local"/>
+        Local midnight
+       </label>
+      </div>
+      <div class="tiny">
+       Stable day won&rsquo;t shift when you travel. Local midnight changes with your current timezone.
+      </div>
+     </div>
+    </section>
+    <!-- Writing experience -->
+    <section aria-label="Writing experience" class="settingsGroup">
+     <div class="settingsGroupTitle">
+      Writing experience
+     </div>
+     <div class="field">
+      <label for="density">
+       Guidance density
+      </label>
+      <select id="density">
+       <option value="minimal">
+        Minimal
+       </option>
+       <option value="supportive">
+        Supportive
+       </option>
+       <option value="silent">
+        Silent
+       </option>
+      </select>
+     </div>
+     <div class="field">
+      <label>
+       Experience
+      </label>
+      <div class="radioRow">
+       <label>
+        <input name="experience" type="radio" value="compact"/>
+        Compact
+       </label>
+       <label>
+        <input name="experience" type="radio" value="complete"/>
+        Complete
+       </label>
+      </div>
+      <div class="tiny">
+       Compact hides extra writing sections. Complete shows Intention, Reflection, and Close the cycle.
+      </div>
+     </div>
+     <div class="field">
+      <label>
+       Marking style
+      </label>
+      <div class="radioRow">
+       <label>
+        <input checked="" name="gentle" type="radio" value="on"/>
+        Gentle (Marked / Not marked)
+       </label>
+       <label>
+        <input name="gentle" type="radio" value="off"/>
+        Direct (Done / Not done)
+       </label>
+      </div>
+      <div class="tiny">
+       This changes wording only &mdash; your data stays the same.
+      </div>
+     </div>
+    </section>
+    <!-- Reminders -->
+    <section aria-label="Reminders" class="settingsGroup">
+     <div class="settingsGroupTitle">
+      Reminders
+     </div>
+     <div class="field">
+      <label class="check">
+       <input id="reminderEnabled" type="checkbox"/>
+       Enable reminders
+      </label>
+      <div class="reminderControls">
+       <select aria-label="Reminder days" id="reminderKinds">
+        <option value="anchor_echo">
+         Anchor + Echo
+        </option>
+        <option value="anchor">
+         Anchor only
+        </option>
+        <option value="echo">
+         Echo only
+        </option>
+       </select>
+       <input aria-label="Reminder time" id="reminderTime" type="time" value="09:00"/>
+      </div>
+      <div class="tiny" id="nextReminderText">
+       Next reminder: &mdash;
+      </div>
+     </div>
+     <div class="field notifRow">
+      <div class="notifStatusPill" id="notifStatusPill">
+       <span aria-hidden="true" class="pillDot">
+       </span>
+       <span id="notifStatus">
+        Notifications are optional &mdash; reminders still appear inside the app.
+       </span>
+      </div>
+      <div class="reminderControls">
+       <button class="btn" id="notifPermBtn" type="button">
+        Enable notifications
+       </button>
+       <button class="btn" id="testNotifBtn" type="button">
+        Test notification
+       </button>
+      </div>
+     </div>
+     <div class="tiny">
+      Push notifications work best when the app is installed (Add to Home Screen) and notifications are allowed.
+     </div>
+    </section>
+    <!-- Advanced / Danger zone -->
+    <section aria-label="Advanced" class="settingsGroup dangerZone">
+     <div class="settingsGroupTitle">
+      Advanced
+     </div>
+     <div class="field">
+      <button class="btn dangerBtn" id="clearCycleBtn" type="button">
+       Clear current cycle data
+      </button>
+      <div class="tiny">
+       Deletes notes + marks for the current cycle on this device only.
+      </div>
+     </div>
+    </section>
+   </div>
   </dialog>
-
-  <div class="toast" id="toast" role="status" aria-live="polite">Saved</div>
-
-  <script type="module" src="./assets/app.js"></script>
-
+  <!-- REVIEW -->
+  <dialog aria-labelledby="reviewTitle" id="reviewDialog">
+   <div class="dialogHead">
+    <h2 id="reviewTitle">
+     Review your notes
+    </h2>
+    <button class="topBtn" id="closeReview" type="button">
+     Close
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <label for="reviewQuery">
+      Search
+     </label>
+     <input id="reviewQuery" placeholder="Search your notes..." type="text">
+     </input>
+    </div>
+    <div class="field">
+     <div class="radioRow">
+      <label>
+       <input checked="" name="reviewScope" type="radio" value="cycle"/>
+       This cycle
+      </label>
+      <label>
+       <input name="reviewScope" type="radio" value="all"/>
+       All time
+      </label>
+     </div>
+    </div>
+    <!-- EXPORTS MOVED HERE -->
+    <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
+     <button class="btn" id="exportNotesTxtBtn" type="button">
+      Export notes (TXT)
+     </button>
+     <button class="btn" id="exportCloseTxtBtn" type="button">
+      Export closing notes (TXT)
+     </button>
+     <button class="btn" id="exportBothTxtBtn" type="button">
+      Export notes + closing (TXT)
+     </button>
+    </div>
+    <div class="field">
+     <div aria-label="Notes list" class="noteList" id="noteList">
+     </div>
+    </div>
+    <div class="field" hidden="" id="reviewEditorWrap">
+     <label for="reviewEditor">
+      Edit selected note
+     </label>
+     <textarea id="reviewEditor" placeholder="Edit note..." rows="8"></textarea>
+     <div class="noteFooter">
+      <div aria-live="polite" class="live">
+       <span aria-hidden="true" class="mark">
+       </span>
+       <span id="reviewSaveText">
+        Autosave enabled
+       </span>
+      </div>
+      <div class="controls">
+       <button class="btn" id="jumpToTodayBtn" type="button">
+        Jump to today
+       </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </dialog>
+  <div aria-live="polite" class="toast" id="toast" role="status">
+   Saved
+  </div>
+  <script src="./assets/app.js" type="module">
+  </script>
   <script>
-    if ("serviceWorker" in navigator) {
+   if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").catch(() => { });
       });
     }
   </script>
-</body>
-
+ </body>
 </html>

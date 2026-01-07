@@ -1,4 +1,4 @@
-const CACHE_NAME = "cosmic36-v11"; // ✅ bump this every deploy
+const CACHE_NAME = "cosmic36-v17"; // ✅ bump this every deploy
 
 const ASSETS = [
     "./",

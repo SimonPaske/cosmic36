@@ -1533,3 +1533,47 @@ dialog::backdrop {
         min-width: 140px;
     }
 }
+
+/* === FIXED REVIEW NOTES STYLING === */
+
+#reviewItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.review-note {
+  background-color: #2b2b2b;
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #444;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-note .note-label {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.review-note .note-body {
+  font-size: 1rem;
+  color: #f0f0f0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.review-note .note-type {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  background-color: #333;
+  color: #aaa;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
