@@ -1467,6 +1467,14 @@ dialog::backdrop {
     margin-top: 10px;
 }
 
+.backupRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
 .notifRow {
     display: flex;
     gap: 10px;

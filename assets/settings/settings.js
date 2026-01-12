@@ -11,7 +11,8 @@ export function loadSettings() {
     experience: "compact",
     remindersEnabled: false,
     reminderKinds: "anchor_echo",
-    reminderTime: "09:00"
+    reminderTime: "09:00",
+    autoBackupEnabled: false
   };
 
   const settings = loadJSON(SETTINGS_KEY, fallback);
@@ -28,7 +29,8 @@ export function saveSettings(state) {
     experience: state.experience,
     remindersEnabled: state.remindersEnabled,
     reminderKinds: state.reminderKinds,
-    reminderTime: state.reminderTime
+    reminderTime: state.reminderTime,
+    autoBackupEnabled: state.autoBackupEnabled
   };
 
   saveJSON(SETTINGS_KEY, clean);

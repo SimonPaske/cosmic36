@@ -11,10 +11,15 @@
   <meta content="#0b0b0f" media="(prefers-color-scheme: dark)" name="theme-color"/>
   <meta content="#ffffff" media="(prefers-color-scheme: light)" name="theme-color"/>
   <meta content="yes" name="apple-mobile-web-app-capable"/>
+  <meta content="yes" name="mobile-web-app-capable"/>
   <meta content="Cosmic 36" name="apple-mobile-web-app-title"/>
+  <meta content="179413367660-jl93spt8ndl02mf1ilna007mt7sedou5.apps.googleusercontent.com" name="google-client-id"/>
   <link href="./icons/icon-192.png" rel="apple-touch-icon"/>
+  <link href="./icons/icon.svg" rel="icon" type="image/svg+xml"/>
+  <link href="./icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
   <link href="./assets/style.css" rel="stylesheet">
   </link>
+  <script defer src="https://accounts.google.com/gsi/client"></script>
  </head>
  <body>
   <div aria-hidden="true" class="aura">
@@ -457,6 +462,47 @@
      </div>
      <div class="tiny">
       Push notifications work best when the app is installed (Add to Home Screen) and notifications are allowed.
+     </div>
+    </section>
+    <!-- Cloud backup -->
+    <section aria-label="Cloud backup" class="settingsGroup">
+     <div class="settingsGroupTitle">
+      Cloud backup
+     </div>
+     <div class="field">
+      <div class="tiny">
+       Sign in with Google to save a private backup in your Drive app data folder.
+      </div>
+     </div>
+     <div class="field">
+      <div class="backupRow">
+       <button class="btn" id="googleSignInBtn" type="button">
+        Connect Google
+       </button>
+       <button class="btn" hidden="" id="googleSignOutBtn" type="button">
+        Sign out
+       </button>
+      </div>
+      <div class="tiny" id="googleStatus">
+       Not connected.
+      </div>
+     </div>
+     <div class="field">
+      <div class="backupRow">
+       <button class="btn" disabled="" id="backupNowBtn" type="button">
+        Backup now
+       </button>
+       <button class="btn" disabled="" id="restoreNowBtn" type="button">
+        Restore backup
+       </button>
+      </div>
+      <label class="check">
+       <input id="autoBackupEnabled" type="checkbox"/>
+       Auto-backup when notes change
+      </label>
+      <div class="tiny" id="backupMeta">
+       Last backup: Never. Last restore: Never.
+      </div>
      </div>
     </section>
     <!-- Advanced / Danger zone -->

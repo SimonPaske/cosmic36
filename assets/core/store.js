@@ -11,6 +11,9 @@ export function loadJSON(key, fallback = {}) {
 
 export function saveJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+  if (typeof document !== "undefined") {
+    document.dispatchEvent(new CustomEvent("cosmic36:localstorage-saved", { detail: { key } }));
+  }
 }
 
 export function loadStore() {

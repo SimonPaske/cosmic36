@@ -6,3 +6,4 @@ export const START_WINDOWS = new Set([1, 18]);
 
 export const SETTINGS_KEY = "cosmic36_settings_v7";
 export const STORE_KEY = "cosmic36_store_v7";
+export const BACKUP_META_KEY = "cosmic36_backup_meta_v1";

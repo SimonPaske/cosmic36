@@ -9,6 +9,7 @@ import { initSettingsUI } from "./features/settings-ui.js";
 import { initNotes } from "./features/notes.js";
 import { initNotifications } from "./features/notifications.js";
 import { initPatternInfo } from "./features/pattern-info.js";
+import { initBackup } from "./features/backup.js";
 import { $ } from "./ui/dom.js";
 import { openDialog, closeDialog } from "./ui/dialog.js";
 
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     remindersEnabled: !!settings.remindersEnabled,
     reminderKinds: settings.reminderKinds || "anchor_echo",
     reminderTime: settings.reminderTime || "09:00",
+    autoBackupEnabled: !!settings.autoBackupEnabled,
     dayInCycle: null,
     cycleIndex: null,
     cycleStartYMD: "",
@@ -101,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
   notificationsApi = initNotifications(state);
   initNotes(state, store, { renderProgressBar: renderProgress, renderAside });
   initPatternInfo();
+  initBackup(state);
 
   renderAll();
 });
