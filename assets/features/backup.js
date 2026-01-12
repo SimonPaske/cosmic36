@@ -6,6 +6,7 @@ import { $ } from "../ui/dom.js";
 
 const BACKUP_FILENAME = "cosmic36-backup.json";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
+const GOOGLE_CONNECTED_KEY = "cosmic36_google_connected_v1";
 
 function getClientId() {
   const meta = document.querySelector('meta[name="google-client-id"]');
@@ -23,6 +24,15 @@ function getBackupMeta() {
 
 function setBackupMeta(next) {
   saveJSON(BACKUP_META_KEY, { ...getBackupMeta(), ...next });
+}
+
+function hasGoogleConnectionFlag() {
+  return loadJSON(GOOGLE_CONNECTED_KEY, false) === true;
+}
+
+function setGoogleConnectionFlag(isConnected) {
+  if (isConnected) saveJSON(GOOGLE_CONNECTED_KEY, true);
+  else localStorage.removeItem(GOOGLE_CONNECTED_KEY);
 }
 
 function buildBackupPayload() {
@@ -166,6 +176,8 @@ export function initBackup(state) {
         }
         accessToken = response.access_token;
         tokenExpiry = Date.now() + (response.expires_in || 0) * 1000 - 30000;
+        setGoogleConnectionFlag(true);
+        setConnected(true);
         resolve(accessToken);
       };
       client.requestAccessToken({ prompt });
@@ -214,12 +226,14 @@ export function initBackup(state) {
       const token = await ensureAccessToken();
       const payload = buildBackupPayload();
       await uploadBackup(token, payload);
+      setGoogleConnectionFlag(true);
+      setConnected(true);
       setBackupMeta({ lastBackupAt: new Date().toISOString() });
       updateBackupMetaLine();
       showToast("Backup saved to Google Drive.");
     } catch (error) {
       console.error(error);
-      showToast("Backup failed. Check your connection.");
+      showToast("Backup failed. Check your connection.", "warn");
     }
   }
 
@@ -228,13 +242,15 @@ export function initBackup(state) {
       const token = await ensureAccessToken();
       const payload = await downloadBackup(token);
       if (!payload) {
-        showToast("No backup found yet.");
+        showToast("No backup found yet.", "warn");
         return;
       }
       if (!isValidBackup(payload)) {
-        showToast("Backup file is invalid.");
+        showToast("Backup file is invalid.", "warn");
         return;
       }
+      setGoogleConnectionFlag(true);
+      setConnected(true);
       saveJSON(SETTINGS_KEY, payload.settings);
       saveJSON(STORE_KEY, payload.store);
       setBackupMeta({ lastRestoreAt: new Date().toISOString() });
@@ -243,7 +259,7 @@ export function initBackup(state) {
       window.setTimeout(() => window.location.reload(), 400);
     } catch (error) {
       console.error(error);
-      showToast("Restore failed. Check your connection.");
+      showToast("Restore failed. Check your connection.", "warn");
     }
   }
 
@@ -253,6 +269,7 @@ export function initBackup(state) {
     }
     accessToken = "";
     tokenExpiry = 0;
+    setGoogleConnectionFlag(false);
     setConnected(false);
   }
 
@@ -276,11 +293,12 @@ export function initBackup(state) {
   signInBtn.addEventListener("click", async () => {
     try {
       await ensureAccessToken("consent");
+      setGoogleConnectionFlag(true);
       setConnected(true);
       showToast("Google Drive connected.");
     } catch (error) {
       console.error(error);
-      showToast("Sign-in failed.");
+      showToast("Sign-in failed.", "warn");
     }
   });
 
@@ -301,6 +319,8 @@ export function initBackup(state) {
 
   document.addEventListener("cosmic36:localstorage-saved", handleStorageEvent);
 
-  setConnected(false);
+  const hasConnection = hasGoogleConnectionFlag();
+  setConnected(hasConnection);
   updateBackupMetaLine();
+
 }

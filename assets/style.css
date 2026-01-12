@@ -80,6 +80,11 @@ select {
 
 button {
     color: inherit;
+    transition: filter 120ms ease, background-color 120ms ease, color 120ms ease, border-color 120ms ease, transform 90ms ease;
+}
+
+button:active {
+    filter: invert(1);
 }
 
 :focus-visible {
@@ -944,11 +949,21 @@ dialog::backdrop {
     pointer-events: none;
     z-index: 1000;
     border: 1px solid color-mix(in oklab, CanvasText 18%, transparent);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    width: max-content;
+    max-width: min(520px, calc(100% - 24px));
+    margin: 0;
 }
 
 .toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(-2px);
+}
+
+.toast--warn {
+    background: var(--anchorSolid);
+    color: #fff;
+    border-color: color-mix(in oklab, var(--anchorSolid) 85%, transparent);
 }
 
 /* Review list */

@@ -2,16 +2,8 @@ import { $ } from "../ui/dom.js";
 import { openDialog } from "../ui/dialog.js";
 import { openTooltip } from "../ui/tooltip.js";
 import { putCycle } from "../core/cycle.js";
+import { showToast } from "../ui/toast.js";
 import { PATTERN_INFO } from "../../infoContent.js";
-
-function showToast(message = "Saved") {
-  const toast = $("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add("show");
-  window.clearTimeout(toast._timer);
-  toast._timer = window.setTimeout(() => toast.classList.remove("show"), 1200);
-}
 
 function ensureCycle(state) {
   if (state.cycle) return true;

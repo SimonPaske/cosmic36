@@ -16,13 +16,13 @@ export function initNotifications(state) {
 
   function setNotifToastFromState() {
     if (!("Notification" in window)) {
-      showToast("Notifications not supported");
+      showToast("Notifications not supported", "warn");
       return;
     }
     const permission = Notification.permission;
     if (permission === "granted") showToast("Notifications enabled ✓");
-    else if (permission === "denied") showToast("Notifications blocked");
-    else showToast("Notifications: permission needed");
+    else if (permission === "denied") showToast("Notifications blocked", "warn");
+    else showToast("Notifications: permission needed", "warn");
   }
 
   function updateNotifUI() {
@@ -69,7 +69,7 @@ export function initNotifications(state) {
 
     testNotifBtn.addEventListener("click", async () => {
       if (!("Notification" in window)) {
-        showToast("Notifications not supported");
+        showToast("Notifications not supported", "warn");
         return;
       }
 
@@ -77,13 +77,13 @@ export function initNotifications(state) {
         const p = await Notification.requestPermission();
         updateNotifUI();
         if (p !== "granted") {
-          showToast("Notifications not enabled");
+          showToast("Notifications not enabled", "warn");
           return;
         }
       }
 
       if (Notification.permission !== "granted") {
-        showToast("Notifications are blocked");
+        showToast("Notifications are blocked", "warn");
         return;
       }
 
@@ -91,7 +91,7 @@ export function initNotifications(state) {
         "Cosmic 36 — Test notification",
         "If you see this, notifications are working on this device/browser."
       );
-      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)");
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "info" : "warn");
     });
   }
 
@@ -218,7 +218,7 @@ export function initNotifications(state) {
   if (notifPermBtn) {
     notifPermBtn.addEventListener("click", async () => {
       if (!("Notification" in window)) {
-        showToast("Notifications not supported");
+        showToast("Notifications not supported", "warn");
         return;
       }
 
@@ -231,8 +231,8 @@ export function initNotifications(state) {
       const permission = await Notification.requestPermission();
       updateNotifUI();
       if (permission === "granted") showToast("Notifications enabled ✓");
-      else if (permission === "denied") showToast("Notifications blocked");
-      else showToast("Notifications: permission needed");
+      else if (permission === "denied") showToast("Notifications blocked", "warn");
+      else showToast("Notifications: permission needed", "warn");
     });
   }
 
@@ -243,7 +243,7 @@ export function initNotifications(state) {
   if (testNotifBtn) {
     testNotifBtn.addEventListener("click", async () => {
       if (!("Notification" in window)) {
-        showToast("Notifications not supported");
+        showToast("Notifications not supported", "warn");
         return;
       }
 
@@ -251,13 +251,13 @@ export function initNotifications(state) {
         const permission = await Notification.requestPermission();
         updateNotifUI();
         if (permission !== "granted") {
-          showToast("Notifications not enabled");
+          showToast("Notifications not enabled", "warn");
           return;
         }
       }
 
       if (Notification.permission !== "granted") {
-        showToast("Notifications are blocked");
+        showToast("Notifications are blocked", "warn");
         return;
       }
 
@@ -265,7 +265,7 @@ export function initNotifications(state) {
         "Cosmic 36 — Test notification",
         "If you see this, notifications are working on this device/browser."
       );
-      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)");
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "info" : "warn");
     });
   }
 
