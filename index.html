@@ -488,14 +488,17 @@
       </div>
      </div>
      <div class="field">
-      <div class="backupRow">
+     <div class="backupRow">
        <button class="btn" disabled="" id="backupNowBtn" type="button">
         Backup now
        </button>
        <button class="btn" disabled="" id="restoreNowBtn" type="button">
         Restore backup
        </button>
-      </div>
+       <button class="btn dangerBtn" disabled="" id="deleteBackupBtn" type="button">
+        Delete backup
+       </button>
+     </div>
       <label class="check">
        <input id="autoBackupEnabled" type="checkbox"/>
        Auto-backup when notes change
@@ -519,6 +522,52 @@
       </div>
      </div>
     </section>
+   </div>
+  </dialog>
+  <!-- DELETE BACKUP -->
+  <dialog aria-labelledby="deleteBackupTitle" id="deleteBackupDialog">
+   <div class="dialogHead">
+    <h2 id="deleteBackupTitle">
+     Delete cloud backup
+    </h2>
+    <button class="topBtn" id="deleteBackupCancel" type="button">
+     Cancel
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <p id="deleteBackupMessage">
+      This permanently deletes the backup stored in your Google Drive app data.
+     </p>
+    </div>
+    <div class="controls">
+     <button class="btn dangerBtn" id="deleteBackupConfirm" type="button">
+      Delete backup
+     </button>
+    </div>
+   </div>
+  </dialog>
+  <!-- CLEAR NOTE -->
+  <dialog aria-labelledby="clearNoteTitle" id="clearNoteDialog">
+   <div class="dialogHead">
+    <h2 id="clearNoteTitle">
+     Clear today's note
+    </h2>
+    <button class="topBtn" id="clearNoteCancel" type="button">
+     Cancel
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <p id="clearNoteMessage">
+      This will remove the note for today.
+     </p>
+    </div>
+    <div class="controls">
+     <button class="btn dangerBtn" id="clearNoteConfirm" type="button">
+      Clear note
+     </button>
+    </div>
    </div>
   </dialog>
   <!-- REVIEW -->
@@ -625,9 +674,9 @@
     </div>
    </div>
   </dialog>
-  <dialog aria-live="polite" class="toast" id="toast" role="status">
+  <div aria-live="polite" class="toast" id="toast" popover="manual" role="status">
    Saved
-  </dialog>
+  </div>
   <script src="./assets/app.js" type="module">
   </script>
   <script>

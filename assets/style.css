@@ -936,8 +936,8 @@ dialog::backdrop {
 .toast {
     position: fixed;
     left: 50%;
-    transform: translateX(-50%);
-    bottom: 18px;
+    top: 50%;
+    transform: translate(-50%, -50%);
     background: color-mix(in oklab, CanvasText 88%, transparent);
     color: Canvas;
     padding: 10px 12px;
@@ -955,9 +955,13 @@ dialog::backdrop {
     margin: 0;
 }
 
+.toast::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
 .toast.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(-2px);
+    transform: translate(-50%, calc(-50% - 2px));
 }
 
 .toast--warn {

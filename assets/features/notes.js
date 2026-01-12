@@ -2,6 +2,7 @@ import { putCycle } from "../core/cycle.js";
 import { mindfulTemplate } from "../core/content.js";
 import { $ } from "../ui/dom.js";
 import { showToast } from "../ui/toast.js";
+import { openDialog, closeDialog } from "../ui/dialog.js";
 import { setDoneUI } from "./render.js";
 
 export function initNotes(state, store, { renderProgressBar, renderAside }) {
@@ -10,6 +11,9 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
   const expandBtn = $("expandBtn");
   const insertTemplateBtn = $("insertTemplateBtn");
   const clearNoteBtn = $("clearNoteBtn");
+  const clearNoteDialog = $("clearNoteDialog");
+  const clearNoteConfirm = $("clearNoteConfirm");
+  const clearNoteCancel = $("clearNoteCancel");
   const saveStatus = $("saveStatus");
   const saveText = $("saveText");
   const intentionBox = $("intentionBox");
@@ -191,12 +195,39 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
   }
 
   if (clearNoteBtn && noteBox) {
-    clearNoteBtn.addEventListener("click", () => {
-      if (!confirm("Clear the note for today?")) return;
+    const doClearNote = () => {
       noteBox.value = "";
       scheduleNoteAutosave();
       showToast("Cleared");
+    };
+
+    clearNoteBtn.addEventListener("click", () => {
+      if (clearNoteDialog && clearNoteConfirm && clearNoteCancel) {
+        openDialog(clearNoteDialog, clearNoteBtn);
+        return;
+      }
+      showToast("Unable to open confirmation dialog.", "warn");
     });
+
+    if (clearNoteConfirm) {
+      clearNoteConfirm.addEventListener("click", () => {
+        doClearNote();
+        if (clearNoteDialog) closeDialog(clearNoteDialog, clearNoteBtn);
+      });
+    }
+
+    if (clearNoteCancel) {
+      clearNoteCancel.addEventListener("click", () => {
+        if (clearNoteDialog) closeDialog(clearNoteDialog, clearNoteBtn);
+      });
+    }
+
+    if (clearNoteDialog) {
+      clearNoteDialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        closeDialog(clearNoteDialog, clearNoteBtn);
+      });
+    }
   }
 
   if (intentionBox) intentionBox.addEventListener("input", () => scheduleExtraAutosave("intention"));

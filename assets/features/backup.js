@@ -3,6 +3,7 @@ import { loadJSON, saveJSON } from "../core/store.js";
 import { saveSettings } from "../settings/settings.js";
 import { showToast } from "../ui/toast.js";
 import { $ } from "../ui/dom.js";
+import { openDialog, closeDialog } from "../ui/dialog.js";
 
 const BACKUP_FILENAME = "cosmic36-backup.json";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
@@ -102,16 +103,34 @@ async function fetchText(url, token, options = {}) {
   return response.text();
 }
 
+async function fetchOk(url, token, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Request failed (${response.status})`);
+  }
+}
+
 export function initBackup(state) {
   const signInBtn = $("googleSignInBtn");
   const signOutBtn = $("googleSignOutBtn");
   const backupBtn = $("backupNowBtn");
   const restoreBtn = $("restoreNowBtn");
+  const deleteBtn = $("deleteBackupBtn");
+  const deleteDialog = $("deleteBackupDialog");
+  const deleteConfirmBtn = $("deleteBackupConfirm");
+  const deleteCancelBtn = $("deleteBackupCancel");
   const statusLine = $("googleStatus");
   const backupMetaLine = $("backupMeta");
   const autoBackupToggle = $("autoBackupEnabled");
 
-  if (!signInBtn || !signOutBtn || !backupBtn || !restoreBtn || !statusLine || !backupMetaLine || !autoBackupToggle) {
+  if (!signInBtn || !signOutBtn || !backupBtn || !restoreBtn || !deleteBtn || !statusLine || !backupMetaLine || !autoBackupToggle) {
     return;
   }
 
@@ -137,6 +156,7 @@ export function initBackup(state) {
     signOutBtn.hidden = !isConnected;
     backupBtn.disabled = !isConnected;
     restoreBtn.disabled = !isConnected;
+    deleteBtn.disabled = !isConnected;
     updateStatus(isConnected ? "Connected to Google Drive (app data)." : "Not connected.");
   }
 
@@ -221,6 +241,14 @@ export function initBackup(state) {
     return JSON.parse(raw);
   }
 
+  async function deleteBackup(token) {
+    const fileId = await findBackupFileId(token);
+    if (!fileId) return false;
+    const url = `https://www.googleapis.com/drive/v3/files/${fileId}`;
+    await fetchOk(url, token, { method: "DELETE" });
+    return true;
+  }
+
   async function handleBackup() {
     try {
       const token = await ensureAccessToken();
@@ -260,6 +288,23 @@ export function initBackup(state) {
     } catch (error) {
       console.error(error);
       showToast("Restore failed. Check your connection.", "warn");
+    }
+  }
+
+  async function handleDeleteBackupConfirmed() {
+    try {
+      const token = await ensureAccessToken();
+      const removed = await deleteBackup(token);
+      if (!removed) {
+        showToast("No backup found yet.", "warn");
+        return;
+      }
+      setBackupMeta({ lastBackupAt: "" });
+      updateBackupMetaLine();
+      showToast("Backup deleted.");
+    } catch (error) {
+      console.error(error);
+      showToast("Delete failed. Check your connection.", "warn");
     }
   }
 
@@ -309,6 +354,33 @@ export function initBackup(state) {
 
   backupBtn.addEventListener("click", handleBackup);
   restoreBtn.addEventListener("click", handleRestore);
+  deleteBtn.addEventListener("click", () => {
+    if (deleteDialog && deleteConfirmBtn && deleteCancelBtn) {
+      openDialog(deleteDialog, deleteBtn);
+    } else {
+      handleDeleteBackupConfirmed();
+    }
+  });
+
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.addEventListener("click", async () => {
+      await handleDeleteBackupConfirmed();
+      if (deleteDialog) closeDialog(deleteDialog, deleteBtn);
+    });
+  }
+
+  if (deleteCancelBtn) {
+    deleteCancelBtn.addEventListener("click", () => {
+      if (deleteDialog) closeDialog(deleteDialog, deleteBtn);
+    });
+  }
+
+  if (deleteDialog) {
+    deleteDialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeDialog(deleteDialog, deleteBtn);
+    });
+  }
 
   autoBackupToggle.checked = !!state.autoBackupEnabled;
   autoBackupToggle.addEventListener("change", () => {

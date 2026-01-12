@@ -6,19 +6,23 @@ export function showToast(message, tone = "info") {
   toast.textContent = message;
   toast.classList.remove("toast--warn");
   if (tone === "warn") toast.classList.add("toast--warn");
-  if (typeof toast.show === "function") {
-    if (toast.open && typeof toast.close === "function") toast.close();
-    toast.show();
+  if (typeof toast.showPopover === "function") {
+    try {
+      if (toast.matches(":popover-open")) toast.hidePopover();
+      toast.showPopover();
+    } catch {}
   }
   toast.classList.add("show");
   window.clearTimeout(toast._timer);
   window.clearTimeout(toast._closeTimer);
   toast._timer = window.setTimeout(() => {
     toast.classList.remove("show");
-    if (typeof toast.close === "function" && toast.open) {
+    if (typeof toast.hidePopover === "function") {
       toast._closeTimer = window.setTimeout(() => {
-        if (toast.open) toast.close();
-      }, 180);
+        try {
+          if (toast.matches(":popover-open")) toast.hidePopover();
+        } catch {}
+      }, 200);
     }
-  }, 900);
+  }, 1500);
 }
