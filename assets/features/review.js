@@ -23,10 +23,14 @@ function escapePlain(text) {
 
 export function initReview(state, store, { render, openSettingsDialog }) {
   const reviewDialog = $("reviewDialog");
+  const reviewTitle = $("reviewTitle");
   const openReview = $("openReview");
   const closeReview = $("closeReview");
   const reviewQuery = $("reviewQuery");
   const reviewScopeRadios = [...document.querySelectorAll('input[name="reviewScope"]')];
+  const reviewFilterDaily = $("reviewFilterDaily");
+  const reviewFilterExtra = $("reviewFilterExtra");
+  const reviewFilterCycle = $("reviewFilterCycle");
   const noteList = $("noteList");
   const reviewEditorWrap = $("reviewEditorWrap");
   const reviewEditor = $("reviewEditor");
@@ -37,15 +41,46 @@ export function initReview(state, store, { render, openSettingsDialog }) {
   const exportBothTxtBtn = $("exportBothTxtBtn") || $("exportAllTxtBtn");
   const asideReviewBtn = $("asideReviewBtn");
 
+  const reviewQueryField = reviewQuery?.closest(".field");
+  const reviewScopeField = reviewScopeRadios[0]?.closest(".field");
+  const reviewFilterField = $("reviewFilterField");
+  const reviewExportsField = exportNotesTxtBtn?.closest(".field");
+
+  let reviewMode = "list";
+  let selectedDay = null;
+
+  function setReviewMode(mode, day = null) {
+    reviewMode = mode;
+    selectedDay = day;
+    const isDay = reviewMode === "day";
+    if (isDay) state.selectedReviewItem = null;
+    if (reviewTitle) {
+      reviewTitle.textContent = isDay && selectedDay ? `Day ${selectedDay} notes` : "Review your notes";
+    }
+    if (reviewQueryField) reviewQueryField.hidden = isDay;
+    if (reviewScopeField) reviewScopeField.hidden = isDay;
+    if (reviewFilterField) reviewFilterField.hidden = isDay;
+    if (reviewExportsField) reviewExportsField.hidden = isDay;
+  }
+
   function getReviewScope() {
     const checked = reviewScopeRadios.find((r) => r.checked);
     return checked ? checked.value : "cycle";
+  }
+
+  function getReviewFilters() {
+    return {
+      daily: reviewFilterDaily ? reviewFilterDaily.checked : true,
+      extra: reviewFilterExtra ? reviewFilterExtra.checked : true,
+      cycle: reviewFilterCycle ? reviewFilterCycle.checked : true
+    };
   }
 
   function buildReviewItems() {
     if (!state.dobStr) return [];
     const q = (reviewQuery?.value || "").trim().toLowerCase();
     const scope = getReviewScope();
+    const filters = getReviewFilters();
     const onlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
 
     const items = [];
@@ -56,18 +91,108 @@ export function initReview(state, store, { render, openSettingsDialog }) {
       const match = key.match(/cycle(\d+)$/);
       const cIndex = match ? Number(match[1]) : null;
 
-      const notes = cycle.notes || {};
-      for (const [dayStr, note] of Object.entries(notes)) {
-        const day = Number(dayStr);
-        const text = escapePlain(note);
-        if (!text) continue;
+      if (filters.daily) {
+        const notes = cycle.notes || {};
+        for (const [dayStr, note] of Object.entries(notes)) {
+          const day = Number(dayStr);
+          const text = escapePlain(note);
+          if (!text) continue;
+          const label = `NOTE • C${cIndex} D${day}`;
+          const preview = text.replace(/\s+/g, " ").slice(0, 90);
+          const hay = (label + " " + preview + " " + text).toLowerCase();
+          if (q && !hay.includes(q)) continue;
 
-        const type = getDayType(day);
+          items.push({
+            cycleIndex: cIndex,
+            day,
+            kind: "note",
+            label,
+            badgeClass: getDayType(day),
+            badgeLabel: getDayType(day),
+            preview,
+            full: text,
+            storeKey: key,
+            editable: true
+          });
+        }
+      }
+
+      if (filters.extra) {
+        const intentions = cycle.intention || {};
+        for (const [dayStr, note] of Object.entries(intentions)) {
+          const day = Number(dayStr);
+          const text = escapePlain(note);
+          if (!text) continue;
+          const label = `INTENTION • C${cIndex} D${day}`;
+          const preview = text.replace(/\s+/g, " ").slice(0, 90);
+          const hay = (label + " " + preview + " " + text).toLowerCase();
+          if (q && !hay.includes(q)) continue;
+          items.push({
+            cycleIndex: cIndex,
+            day,
+            kind: "intention",
+            label,
+            badgeClass: "light",
+            badgeLabel: "Intention",
+            preview,
+            full: text,
+            storeKey: key,
+            editable: true
+          });
+        }
+
+        const reflections = cycle.reflection || {};
+        for (const [dayStr, note] of Object.entries(reflections)) {
+          const day = Number(dayStr);
+          const text = escapePlain(note);
+          if (!text) continue;
+          const label = `REFLECTION • C${cIndex} D${day}`;
+          const preview = text.replace(/\s+/g, " ").slice(0, 90);
+          const hay = (label + " " + preview + " " + text).toLowerCase();
+          if (q && !hay.includes(q)) continue;
+          items.push({
+            cycleIndex: cIndex,
+            day,
+            kind: "reflection",
+            label,
+            badgeClass: "light",
+            badgeLabel: "Reflection",
+            preview,
+            full: text,
+            storeKey: key,
+            editable: true
+          });
+        }
+      }
+
+      const close = cycle.close || {};
+      const closeLines = [];
+      const lesson = escapePlain(close.lesson);
+      const carry = escapePlain(close.carry);
+      const release = escapePlain(close.release);
+
+      if (lesson) closeLines.push(`Lesson: ${lesson}`);
+      if (carry) closeLines.push(`Carry: ${carry}`);
+      if (release) closeLines.push(`Release: ${release}`);
+
+      if (filters.cycle && closeLines.length) {
+        const text = closeLines.join("\n");
+        const label = `CLOSE CYCLE • C${cIndex}`;
         const preview = text.replace(/\s+/g, " ").slice(0, 90);
-        const hay = (preview + " " + text).toLowerCase();
+        const hay = (label + " " + preview + " " + text).toLowerCase();
         if (q && !hay.includes(q)) continue;
-
-        items.push({ cycleIndex: cIndex, day, type, preview, full: text, storeKey: key });
+        items.push({
+          cycleIndex: cIndex,
+          day: 0,
+          kind: "close",
+          label,
+          badgeClass: "light",
+          badgeLabel: "Cycle",
+          preview,
+          full: text,
+          storeKey: key,
+          editable: false
+        });
       }
     }
 
@@ -75,8 +200,95 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     return items;
   }
 
+  function buildDayReviewItems(day) {
+    if (!state.cycle) return [];
+    const dayKey = String(day);
+    const items = [];
+
+    const note = escapePlain(state.cycle.notes?.[dayKey]);
+    if (note) {
+      items.push({
+        label: "Note",
+        badge: getDayType(day),
+        text: note
+      });
+    }
+
+    const intention = escapePlain(state.cycle.intention?.[dayKey]);
+    if (intention) {
+      items.push({
+        label: "Intention",
+        badge: "light",
+        text: intention
+      });
+    }
+
+    const reflection = escapePlain(state.cycle.reflection?.[dayKey]);
+    if (reflection) {
+      items.push({
+        label: "Reflection",
+        badge: "light",
+        text: reflection
+      });
+    }
+
+    const close = state.cycle.close || {};
+    const closeLines = [];
+    const lesson = escapePlain(close.lesson);
+    const carry = escapePlain(close.carry);
+    const release = escapePlain(close.release);
+
+    if (lesson) closeLines.push(`Lesson: ${lesson}`);
+    if (carry) closeLines.push(`Carry: ${carry}`);
+    if (release) closeLines.push(`Release: ${release}`);
+
+    if (closeLines.length) {
+      items.push({
+        label: "Cycle note",
+        badge: "light",
+        text: closeLines.join("\n")
+      });
+    }
+
+    return items;
+  }
+
+  function renderDayReview(day) {
+    if (!noteList) return;
+    const items = buildDayReviewItems(day);
+
+    if (!items.length) {
+      noteList.innerHTML =
+        `<div class="noteItem"><div class="noteMeta"><b>No notes found</b><span>Write a note on Day ${day}, then it will show here.</span></div><span class="badge light">—</span></div>`;
+      if (reviewEditorWrap) reviewEditorWrap.hidden = true;
+      return;
+    }
+
+    noteList.innerHTML = items
+      .map((it) => {
+        const text = it.text.replace(/\n/g, "<br>");
+        return `
+          <div class="noteItem">
+            <div class="noteMeta">
+              <b>${it.label}</b>
+              <span>${text}</span>
+            </div>
+            <span class="badge ${it.badge}">${it.label}</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    if (reviewEditorWrap) reviewEditorWrap.hidden = true;
+  }
+
   function renderReview() {
     if (!noteList) return;
+    if (reviewMode === "day" && selectedDay) {
+      renderDayReview(selectedDay);
+      return;
+    }
+
     const items = buildReviewItems();
 
     if (!items.length) {
@@ -89,15 +301,14 @@ export function initReview(state, store, { render, openSettingsDialog }) {
 
     noteList.innerHTML = items
       .map((it, idx) => {
-        const label = `${it.type.toUpperCase()} • C${it.cycleIndex} D${it.day}`;
         const ell = it.full.length > it.preview.length ? "…" : "";
         return `
           <div class="noteItem" data-idx="${idx}">
             <div class="noteMeta">
-              <b>${label}</b>
+              <b>${it.label}</b>
               <span>${it.preview}${ell}</span>
             </div>
-            <span class="badge ${it.type}">${it.type}</span>
+            <span class="badge ${it.badgeClass}">${it.badgeLabel}</span>
           </div>
         `;
       })
@@ -107,7 +318,7 @@ export function initReview(state, store, { render, openSettingsDialog }) {
       el.addEventListener("click", () => {
         const idx = Number(el.getAttribute("data-idx"));
         const item = items[idx];
-        openReviewEditor(item);
+        if (item.editable) openReviewEditor(item);
       });
     });
   }
@@ -127,11 +338,19 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     if (reviewSaveText) reviewSaveText.textContent = "Saving…";
 
     state.reviewSaveTimer = setTimeout(() => {
-      const { storeKey, day } = state.selectedReviewItem;
+      const { storeKey, day, kind } = state.selectedReviewItem;
       const cycle = store[storeKey];
       if (!cycle) return;
 
-      cycle.notes[String(day)] = reviewEditor.value || "";
+      if (kind === "note") cycle.notes[String(day)] = reviewEditor.value || "";
+      if (kind === "intention") {
+        if (!cycle.intention) cycle.intention = {};
+        cycle.intention[String(day)] = reviewEditor.value || "";
+      }
+      if (kind === "reflection") {
+        if (!cycle.reflection) cycle.reflection = {};
+        cycle.reflection[String(day)] = reviewEditor.value || "";
+      }
       cycle.updatedAt = Date.now();
       store[storeKey] = cycle;
       saveJSON(STORE_KEY, store);
@@ -313,24 +532,44 @@ export function initReview(state, store, { render, openSettingsDialog }) {
       if (openSettingsDialog) openSettingsDialog();
       return;
     }
+    setReviewMode("list");
     openDialog(reviewDialog, openReview);
     renderReview();
     if (reviewQuery) reviewQuery.focus();
   }
 
+  function openDayReview(day) {
+    if (!state.dobStr) {
+      if (openSettingsDialog) openSettingsDialog();
+      return;
+    }
+    setReviewMode("day", day);
+    openDialog(reviewDialog);
+    renderReview();
+  }
+
   if (openReview) openReview.addEventListener("click", openReviewDialog);
   if (asideReviewBtn) asideReviewBtn.addEventListener("click", openReviewDialog);
 
-  if (closeReview) closeReview.addEventListener("click", () => closeDialog(reviewDialog, openReview));
+  if (closeReview) {
+    closeReview.addEventListener("click", () => {
+      setReviewMode("list");
+      closeDialog(reviewDialog, openReview);
+    });
+  }
   if (reviewDialog) {
     reviewDialog.addEventListener("cancel", (e) => {
       e.preventDefault();
+      setReviewMode("list");
       closeDialog(reviewDialog, openReview);
     });
   }
 
   if (reviewQuery) reviewQuery.addEventListener("input", renderReview);
   reviewScopeRadios.forEach((r) => r.addEventListener("change", renderReview));
+  if (reviewFilterDaily) reviewFilterDaily.addEventListener("change", renderReview);
+  if (reviewFilterExtra) reviewFilterExtra.addEventListener("change", renderReview);
+  if (reviewFilterCycle) reviewFilterCycle.addEventListener("change", renderReview);
   if (reviewEditor) reviewEditor.addEventListener("input", scheduleReviewAutosave);
 
   if (jumpToTodayBtn) {
@@ -345,5 +584,5 @@ export function initReview(state, store, { render, openSettingsDialog }) {
   if (exportCloseTxtBtn) exportCloseTxtBtn.addEventListener("click", exportCloseTXT);
   if (exportBothTxtBtn) exportBothTxtBtn.addEventListener("click", exportBothTXT);
 
-  return { renderReview, openReviewDialog };
+  return { renderReview, openReviewDialog, openDayReview };
 }

@@ -72,8 +72,16 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
     if (!state.cycle || !noteBox) return;
 
     const trimmed = (noteBox.value || "").trim();
+    const key = String(state.dayInCycle);
+    if (trimmed.length === 0 && state.cycle.done[key]) {
+      delete state.cycle.done[key];
+      persistCycle();
+      setDoneUI(state, false);
+      if (renderProgressBar) renderProgressBar();
+      state.autoMarked = false;
+    }
     if (!state.autoMarked && trimmed.length > 3) {
-      state.cycle.done[String(state.dayInCycle)] = true;
+      state.cycle.done[key] = true;
       persistCycle();
       setDoneUI(state, true);
       if (renderProgressBar) renderProgressBar();

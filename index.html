@@ -505,6 +505,25 @@
       </label>
      </div>
     </div>
+    <div class="field" id="reviewFilterField">
+     <label>
+      Filter
+     </label>
+     <div class="radioRow">
+      <label>
+       <input checked="" id="reviewFilterDaily" type="checkbox"/>
+       Daily notes
+      </label>
+      <label>
+       <input checked="" id="reviewFilterExtra" type="checkbox"/>
+       Additional notes
+      </label>
+      <label>
+       <input checked="" id="reviewFilterCycle" type="checkbox"/>
+       Cycle notes
+      </label>
+     </div>
+    </div>
     <!-- EXPORTS MOVED HERE -->
     <div class="field" style="display:flex; gap:10px; flex-wrap:wrap;">
      <button class="btn" id="exportNotesTxtBtn" type="button">
@@ -540,6 +559,23 @@
        </button>
       </div>
      </div>
+    </div>
+   </div>
+  </dialog>
+  <!-- INFO -->
+  <dialog aria-labelledby="infoTitle" id="infoDialog">
+   <div class="dialogHead">
+    <h2 id="infoTitle">
+     Notice
+    </h2>
+    <button class="topBtn" id="infoClose" type="button">
+     Close
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <p id="infoMessage">
+     </p>
     </div>
    </div>
   </dialog>
