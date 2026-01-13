@@ -4,6 +4,7 @@ import { saveJSON } from "../core/store.js";
 import { $ } from "../ui/dom.js";
 import { openDialog, closeDialog } from "../ui/dialog.js";
 import { showToast } from "../ui/toast.js";
+import { showNotice } from "../ui/confirm.js";
 
 function downloadTextFile(filename, text) {
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -365,8 +366,11 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     }, 650);
   }
 
-  function exportNotesTXT() {
-    if (!state.dobStr) return alert("Set your DOB first.");
+  async function exportNotesTXT() {
+    if (!state.dobStr) {
+      await showNotice({ title: "Missing date of birth", message: "Set your DOB first." });
+      return;
+    }
     const scope = getReviewScope();
     const items = buildReviewItems().map((i) => ({
       cycle: i.cycleIndex,
@@ -394,11 +398,14 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     }
 
     downloadTextFile(`cosmic36-notes-${new Date().toISOString().slice(0, 10)}.txt`, lines.join("\n"));
-    showToast("Exported notes");
+    showToast("Exported notes", "success");
   }
 
-  function exportCloseTXT() {
-    if (!state.dobStr) return alert("Set your DOB first.");
+  async function exportCloseTXT() {
+    if (!state.dobStr) {
+      await showNotice({ title: "Missing date of birth", message: "Set your DOB first." });
+      return;
+    }
     const scope = getReviewScope();
     const onlyKey = cycleKey(state.dobStr, state.mode, state.cycleIndex);
 
@@ -447,11 +454,14 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     }
 
     downloadTextFile(`cosmic36-close-${new Date().toISOString().slice(0, 10)}.txt`, lines.join("\n"));
-    showToast("Exported close notes");
+    showToast("Exported close notes", "success");
   }
 
-  function exportBothTXT() {
-    if (!state.dobStr) return alert("Set your DOB first.");
+  async function exportBothTXT() {
+    if (!state.dobStr) {
+      await showNotice({ title: "Missing date of birth", message: "Set your DOB first." });
+      return;
+    }
     const scope = getReviewScope();
 
     const lines = [];
@@ -524,7 +534,7 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     }
 
     downloadTextFile(`cosmic36-full-${new Date().toISOString().slice(0, 10)}.txt`, lines.join("\n"));
-    showToast("Exported full TXT");
+    showToast("Exported full TXT", "success");
   }
 
   function openReviewDialog() {

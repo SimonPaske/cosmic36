@@ -20,7 +20,7 @@ export function initNotifications(state) {
       return;
     }
     const permission = Notification.permission;
-    if (permission === "granted") showToast("Notifications enabled ✓");
+    if (permission === "granted") showToast("Notifications enabled ✓", "success");
     else if (permission === "denied") showToast("Notifications blocked", "warn");
     else showToast("Notifications: permission needed", "warn");
   }
@@ -91,7 +91,7 @@ export function initNotifications(state) {
         "Cosmic 36 — Test notification",
         "If you see this, notifications are working on this device/browser."
       );
-      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "info" : "warn");
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "success" : "warn");
     });
   }
 
@@ -230,7 +230,7 @@ export function initNotifications(state) {
 
       const permission = await Notification.requestPermission();
       updateNotifUI();
-      if (permission === "granted") showToast("Notifications enabled ✓");
+      if (permission === "granted") showToast("Notifications enabled ✓", "success");
       else if (permission === "denied") showToast("Notifications blocked", "warn");
       else showToast("Notifications: permission needed", "warn");
     });
@@ -265,7 +265,7 @@ export function initNotifications(state) {
         "Cosmic 36 — Test notification",
         "If you see this, notifications are working on this device/browser."
       );
-      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "info" : "warn");
+      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "success" : "warn");
     });
   }
 

@@ -1,7 +1,7 @@
 import { $ } from "../ui/dom.js";
 
 export function renderAside(state) {
-  if (state.layout !== "desktop") return;
+  if (!state || state.layout !== "desktop") return;
   const asideText = $("asideText");
   const kv = $("kv");
   if (!asideText || !kv || !state.cycle) return;

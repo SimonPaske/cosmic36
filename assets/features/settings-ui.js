@@ -3,6 +3,7 @@ import { saveSettings } from "../settings/settings.js";
 import { $ } from "../ui/dom.js";
 import { openDialog, closeDialog } from "../ui/dialog.js";
 import { showToast } from "../ui/toast.js";
+import { showConfirm, showNotice } from "../ui/confirm.js";
 import { applyLayout, applyExperience } from "./layout.js";
 
 export function initSettingsUI(state, store, { render }) {
@@ -141,11 +142,21 @@ export function initSettingsUI(state, store, { render }) {
   }
 
   if (clearCycleBtn) {
-    clearCycleBtn.addEventListener("click", () => {
+    clearCycleBtn.addEventListener("click", async () => {
       const info = computeCycleMeta(state.dobStr, state.mode);
-      if (!info) return alert("Set your DOB first.");
+      if (!info) {
+        await showNotice({ title: "Missing date of birth", message: "Set your DOB first." });
+        return;
+      }
       const key = cycleKey(state.dobStr, state.mode, info.cycleIndex);
-      if (!confirm("Clear notes + marks for the current cycle on this device?")) return;
+      const ok = await showConfirm({
+        title: "Clear cycle data",
+        message: "Clear notes + marks for the current cycle on this device?",
+        confirmText: "Clear",
+        cancelText: "Cancel",
+        tone: "danger"
+      });
+      if (!ok) return;
       delete store[key];
       state.cycle = {
         updatedAt: Date.now(),
@@ -161,7 +172,7 @@ export function initSettingsUI(state, store, { render }) {
       if (dobInput) dobInput.value = "";
       syncSettingsUI();
       if (render) render();
-      showToast("Cleared");
+      showToast("Cleared", "success");
     });
   }
 

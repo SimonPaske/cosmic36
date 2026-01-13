@@ -3,6 +3,7 @@ import { openDialog } from "../ui/dialog.js";
 import { openTooltip } from "../ui/tooltip.js";
 import { putCycle } from "../core/cycle.js";
 import { showToast } from "../ui/toast.js";
+import { showConfirm } from "../ui/confirm.js";
 import { PATTERN_INFO } from "../../infoContent.js";
 
 function ensureCycle(state) {
@@ -202,9 +203,15 @@ export function initInteractions(state, store) {
 
   const clearCycleBtn = $("clearCycleBtn");
   if (clearCycleBtn) {
-    clearCycleBtn.addEventListener("click", () => {
+    clearCycleBtn.addEventListener("click", async () => {
       if (!ensureCycle(state)) return;
-      const ok = window.confirm("Clear notes and marks for this cycle?");
+      const ok = await showConfirm({
+        title: "Clear cycle data",
+        message: "Clear notes and marks for this cycle?",
+        confirmText: "Clear",
+        cancelText: "Cancel",
+        tone: "danger"
+      });
       if (!ok) return;
       state.cycle.done = {};
       state.cycle.notes = {};
@@ -215,7 +222,7 @@ export function initInteractions(state, store) {
       hydrateInputs(state);
       updateStatus(state);
       updateProgressToday(state);
-      showToast("Cleared");
+      showToast("Cleared", "success");
     });
   }
 }

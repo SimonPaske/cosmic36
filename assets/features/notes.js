@@ -3,6 +3,7 @@ import { mindfulTemplate } from "../core/content.js";
 import { $ } from "../ui/dom.js";
 import { showToast } from "../ui/toast.js";
 import { openDialog, closeDialog } from "../ui/dialog.js";
+import { showConfirm } from "../ui/confirm.js";
 import { setDoneUI } from "./render.js";
 
 export function initNotes(state, store, { renderProgressBar, renderAside }) {
@@ -29,6 +30,39 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
   function persistCycle() {
     if (!state.cycle || !state.dobStr) return;
     putCycle(store, state.dobStr, state.mode, state.cycleIndex, state.cycle);
+  }
+
+  function getWritingStatus() {
+    const note = (noteBox?.value || "").trim();
+    const intention = (intentionBox?.value || "").trim();
+    const reflection = (reflectionBox?.value || "").trim();
+    const closeLesson = (cycleLessonBox?.value || "").trim();
+    const closeCarry = (cycleCarryBox?.value || "").trim();
+    const closeRelease = (cycleReleaseBox?.value || "").trim();
+    const closeAny = !!(closeLesson || closeCarry || closeRelease);
+    return { hasAny: !!(note || intention || reflection || closeAny) };
+  }
+
+  function syncAutoDoneStatus() {
+    if (!state.cycle) return;
+    const key = String(state.dayInCycle);
+    const { hasAny } = getWritingStatus();
+    const isDone = !!state.cycle.done?.[key];
+    if (hasAny && !isDone) {
+      state.cycle.done[key] = true;
+      persistCycle();
+      setDoneUI(state, true);
+      if (renderProgressBar) renderProgressBar();
+      if (renderAside) renderAside(state);
+      state.autoMarked = true;
+    } else if (!hasAny && isDone) {
+      delete state.cycle.done[key];
+      persistCycle();
+      setDoneUI(state, false);
+      if (renderProgressBar) renderProgressBar();
+      if (renderAside) renderAside(state);
+      state.autoMarked = false;
+    }
   }
 
   function setSaveIndicator(kind) {
@@ -75,22 +109,7 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
   function scheduleNoteAutosave() {
     if (!state.cycle || !noteBox) return;
 
-    const trimmed = (noteBox.value || "").trim();
-    const key = String(state.dayInCycle);
-    if (trimmed.length === 0 && state.cycle.done[key]) {
-      delete state.cycle.done[key];
-      persistCycle();
-      setDoneUI(state, false);
-      if (renderProgressBar) renderProgressBar();
-      state.autoMarked = false;
-    }
-    if (!state.autoMarked && trimmed.length > 3) {
-      state.cycle.done[key] = true;
-      persistCycle();
-      setDoneUI(state, true);
-      if (renderProgressBar) renderProgressBar();
-      state.autoMarked = true;
-    }
+    syncAutoDoneStatus();
 
     if (state.saveTimer) clearTimeout(state.saveTimer);
     setSaveIndicator("saving");
@@ -115,15 +134,8 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
     const cfg = map[which];
     if (!cfg) return;
 
-    if (which === "intention" || which === "reflection") {
-      const trimmed = (cfg.box?.value || "").trim();
-      if (!state.autoMarked && trimmed.length > 3) {
-        state.cycle.done[String(state.dayInCycle)] = true;
-        persistCycle();
-        setDoneUI(state, true);
-        if (renderProgressBar) renderProgressBar();
-        state.autoMarked = true;
-      }
+    if (which === "intention" || which === "reflection" || which === "close") {
+      syncAutoDoneStatus();
     }
 
     setMiniSaved(cfg.text, "saving");
@@ -149,8 +161,8 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
       if (isDone) unmarkDone();
       else markDone();
       state.autoMarked = !isDone;
-      if (renderProgressBar) renderProgressBar();
-      if (renderAside) renderAside();
+    if (renderProgressBar) renderProgressBar();
+    if (renderAside) renderAside(state);
     });
   }
 
@@ -184,9 +196,15 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
   }
 
   if (insertTemplateBtn && noteBox) {
-    insertTemplateBtn.addEventListener("click", () => {
+    insertTemplateBtn.addEventListener("click", async () => {
       if (noteBox.value.trim()) {
-        if (!confirm("Replace your current note with a mindful template?")) return;
+        const ok = await showConfirm({
+          title: "Replace note",
+          message: "Replace your current note with a mindful template?",
+          confirmText: "Replace",
+          cancelText: "Cancel"
+        });
+        if (!ok) return;
       }
       noteBox.value = mindfulTemplate(state.dayInCycle);
       scheduleNoteAutosave();
@@ -198,7 +216,7 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
     const doClearNote = () => {
       noteBox.value = "";
       scheduleNoteAutosave();
-      showToast("Cleared");
+      showToast("Cleared", "success");
     };
 
     clearNoteBtn.addEventListener("click", () => {
@@ -278,7 +296,7 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
         else if (dx < -SWIPE_X) unmarkDone();
 
         if (renderProgressBar) renderProgressBar();
-        if (renderAside) renderAside();
+        if (renderAside) renderAside(state);
       },
       { passive: true }
     );

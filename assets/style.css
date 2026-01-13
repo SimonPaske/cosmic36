@@ -26,6 +26,7 @@
 
     --todayOutline: color-mix(in oklab, CanvasText 28%, transparent);
     --ok: rgba(34, 197, 94, 0.95);
+    --danger: rgba(239, 68, 68, 0.95);
 
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
     --shadowStrong: 0 14px 40px rgba(0, 0, 0, 0.18);
@@ -788,6 +789,11 @@ textarea::placeholder {
     white-space: nowrap;
 }
 
+.btn.isBusy {
+    opacity: 0.75;
+    cursor: wait;
+}
+
 .sectionTitle {
     margin: 14px 0 8px;
     font-size: 12px;
@@ -953,6 +959,9 @@ dialog::backdrop {
     width: max-content;
     max-width: min(520px, calc(100% - 24px));
     margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .toast::backdrop {
@@ -964,10 +973,40 @@ dialog::backdrop {
     transform: translate(-50%, calc(-50% - 2px));
 }
 
+.toastIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.toast--info {
+    background: color-mix(in oklab, CanvasText 88%, transparent);
+    color: Canvas;
+    border-color: color-mix(in oklab, CanvasText 18%, transparent);
+}
+
+.toast--success {
+    background: var(--ok);
+    color: #fff;
+    border-color: color-mix(in oklab, var(--ok) 85%, transparent);
+}
+
 .toast--warn {
     background: var(--anchorSolid);
     color: #fff;
     border-color: color-mix(in oklab, var(--anchorSolid) 85%, transparent);
+}
+
+.toast--error {
+    background: var(--danger);
+    color: #fff;
+    border-color: color-mix(in oklab, var(--danger) 85%, transparent);
 }
 
 /* Review list */

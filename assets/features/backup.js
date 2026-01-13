@@ -2,6 +2,7 @@ import { BACKUP_META_KEY, SETTINGS_KEY, STORE_KEY } from "../core/constants.js";
 import { loadJSON, saveJSON } from "../core/store.js";
 import { saveSettings } from "../settings/settings.js";
 import { showToast } from "../ui/toast.js";
+import { showConfirm } from "../ui/confirm.js";
 import { $ } from "../ui/dom.js";
 import { openDialog, closeDialog } from "../ui/dialog.js";
 
@@ -139,6 +140,10 @@ export function initBackup(state) {
   let autoBackupTimer = null;
   let lastAutoBackupAt = 0;
   let tokenClient = null;
+  let isConnected = false;
+  let isBusy = false;
+  const actionButtons = [backupBtn, restoreBtn, deleteBtn];
+  const originalLabels = new Map(actionButtons.map((btn) => [btn, btn.textContent]));
 
   function updateStatus(text) {
     statusLine.textContent = text;
@@ -151,13 +156,29 @@ export function initBackup(state) {
     backupMetaLine.textContent = `Last backup: ${lastBackup}. Last restore: ${lastRestore}.`;
   }
 
-  function setConnected(isConnected) {
+  function setConnected(nextConnected) {
+    isConnected = Boolean(nextConnected);
     signInBtn.hidden = isConnected;
     signOutBtn.hidden = !isConnected;
-    backupBtn.disabled = !isConnected;
-    restoreBtn.disabled = !isConnected;
-    deleteBtn.disabled = !isConnected;
+    actionButtons.forEach((btn) => {
+      btn.disabled = !isConnected || isBusy;
+    });
     updateStatus(isConnected ? "Connected to Google Drive (app data)." : "Not connected.");
+  }
+
+  function setBusy(activeBtn, label) {
+    isBusy = !!activeBtn;
+    actionButtons.forEach((btn) => {
+      btn.disabled = !isConnected || isBusy;
+      if (!isBusy) {
+        btn.textContent = originalLabels.get(btn);
+        btn.classList.remove("isBusy");
+      }
+    });
+    if (activeBtn) {
+      activeBtn.textContent = label;
+      activeBtn.classList.add("isBusy");
+    }
   }
 
   function ensureTokenClient() {
@@ -253,21 +274,40 @@ export function initBackup(state) {
     try {
       const token = await ensureAccessToken();
       const payload = buildBackupPayload();
+      setBusy(backupBtn, "Backing up...");
       await uploadBackup(token, payload);
       setGoogleConnectionFlag(true);
       setConnected(true);
       setBackupMeta({ lastBackupAt: new Date().toISOString() });
       updateBackupMetaLine();
-      showToast("Backup saved to Google Drive.");
+      showToast("Backup saved to Google Drive.", "success");
     } catch (error) {
       console.error(error);
       showToast("Backup failed. Check your connection.", "warn");
+      const retry = await showConfirm({
+        title: "Backup failed",
+        message: "Check your connection or sign in again.",
+        confirmText: "Sign in again",
+        cancelText: "Dismiss"
+      });
+      if (retry) {
+        try {
+          await ensureAccessToken("consent");
+          showToast("Signed in again.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Sign-in failed.", "warn");
+        }
+      }
+    } finally {
+      setBusy(null);
     }
   }
 
   async function handleRestore() {
     try {
       const token = await ensureAccessToken();
+      setBusy(restoreBtn, "Restoring...");
       const payload = await downloadBackup(token);
       if (!payload) {
         showToast("No backup found yet.", "warn");
@@ -283,17 +323,35 @@ export function initBackup(state) {
       saveJSON(STORE_KEY, payload.store);
       setBackupMeta({ lastRestoreAt: new Date().toISOString() });
       updateBackupMetaLine();
-      showToast("Backup restored. Reloading...");
+      showToast("Backup restored. Reloading...", "success");
       window.setTimeout(() => window.location.reload(), 400);
     } catch (error) {
       console.error(error);
       showToast("Restore failed. Check your connection.", "warn");
+      const retry = await showConfirm({
+        title: "Restore failed",
+        message: "Check your connection or sign in again.",
+        confirmText: "Sign in again",
+        cancelText: "Dismiss"
+      });
+      if (retry) {
+        try {
+          await ensureAccessToken("consent");
+          showToast("Signed in again.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Sign-in failed.", "warn");
+        }
+      }
+    } finally {
+      setBusy(null);
     }
   }
 
   async function handleDeleteBackupConfirmed() {
     try {
       const token = await ensureAccessToken();
+      setBusy(deleteBtn, "Deleting...");
       const removed = await deleteBackup(token);
       if (!removed) {
         showToast("No backup found yet.", "warn");
@@ -301,10 +359,27 @@ export function initBackup(state) {
       }
       setBackupMeta({ lastBackupAt: "" });
       updateBackupMetaLine();
-      showToast("Backup deleted.");
+      showToast("Backup deleted.", "success");
     } catch (error) {
       console.error(error);
       showToast("Delete failed. Check your connection.", "warn");
+      const retry = await showConfirm({
+        title: "Delete failed",
+        message: "Check your connection or sign in again.",
+        confirmText: "Sign in again",
+        cancelText: "Dismiss"
+      });
+      if (retry) {
+        try {
+          await ensureAccessToken("consent");
+          showToast("Signed in again.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Sign-in failed.", "warn");
+        }
+      }
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -340,7 +415,7 @@ export function initBackup(state) {
       await ensureAccessToken("consent");
       setGoogleConnectionFlag(true);
       setConnected(true);
-      showToast("Google Drive connected.");
+      showToast("Google Drive connected.", "success");
     } catch (error) {
       console.error(error);
       showToast("Sign-in failed.", "warn");

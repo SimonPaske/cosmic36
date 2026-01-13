@@ -11,7 +11,7 @@ import { initNotifications } from "./features/notifications.js";
 import { initPatternInfo } from "./features/pattern-info.js";
 import { initBackup } from "./features/backup.js";
 import { $ } from "./ui/dom.js";
-import { openDialog, closeDialog } from "./ui/dialog.js";
+import { showNotice } from "./ui/confirm.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const store = loadStore();
@@ -44,31 +44,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let reviewApi = null;
   let notificationsApi = null;
 
-  const infoDialog = $("infoDialog");
-  const infoTitle = $("infoTitle");
-  const infoMessage = $("infoMessage");
-  const infoClose = $("infoClose");
-
-  function showInfoDialog(title, message) {
-    if (infoTitle) infoTitle.textContent = title;
-    if (infoMessage) infoMessage.textContent = message;
-    openDialog(infoDialog);
-  }
-
-  if (infoClose) {
-    infoClose.addEventListener("click", () => closeDialog(infoDialog));
-  }
-  if (infoDialog) {
-    infoDialog.addEventListener("cancel", (e) => {
-      e.preventDefault();
-      closeDialog(infoDialog);
-    });
-  }
-
   function handleSelectDay(day) {
     if (!state.cycle) return;
     if (day > state.dayInCycle) {
-      showInfoDialog("Future day", "This day is in the future.");
+      showNotice({ title: "Future day", message: "This day is in the future." });
       return;
     }
     const dayKey = String(day);
@@ -76,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const intention = (state.cycle.intention?.[dayKey] || "").trim();
     const reflection = (state.cycle.reflection?.[dayKey] || "").trim();
     if (!note && !intention && !reflection) {
-      showInfoDialog("No notes found", "No notes were left for that day.");
+      showNotice({ title: "No notes found", message: "No notes were left for that day." });
       return;
     }
     if (reviewApi?.openDayReview) reviewApi.openDayReview(day);

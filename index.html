@@ -525,7 +525,7 @@
    </div>
   </dialog>
   <!-- DELETE BACKUP -->
-  <dialog aria-labelledby="deleteBackupTitle" id="deleteBackupDialog">
+  <dialog aria-describedby="deleteBackupMessage" aria-labelledby="deleteBackupTitle" id="deleteBackupDialog">
    <div class="dialogHead">
     <h2 id="deleteBackupTitle">
      Delete cloud backup
@@ -548,7 +548,7 @@
    </div>
   </dialog>
   <!-- CLEAR NOTE -->
-  <dialog aria-labelledby="clearNoteTitle" id="clearNoteDialog">
+  <dialog aria-describedby="clearNoteMessage" aria-labelledby="clearNoteTitle" id="clearNoteDialog">
    <div class="dialogHead">
     <h2 id="clearNoteTitle">
      Clear today's note
@@ -657,8 +657,30 @@
     </div>
    </div>
   </dialog>
+  <!-- CONFIRM -->
+  <dialog aria-describedby="confirmMessage" aria-labelledby="confirmTitle" id="confirmDialog">
+   <div class="dialogHead">
+    <h2 id="confirmTitle">
+     Confirm
+    </h2>
+    <button class="topBtn" id="confirmCancel" type="button">
+     Cancel
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <p id="confirmMessage">
+     </p>
+    </div>
+    <div class="controls">
+     <button class="btn" id="confirmOk" type="button">
+      OK
+     </button>
+    </div>
+   </div>
+  </dialog>
   <!-- INFO -->
-  <dialog aria-labelledby="infoTitle" id="infoDialog">
+  <dialog aria-describedby="infoMessage" aria-labelledby="infoTitle" id="infoDialog">
    <div class="dialogHead">
     <h2 id="infoTitle">
      Notice
@@ -675,7 +697,12 @@
    </div>
   </dialog>
   <div aria-live="polite" class="toast" id="toast" popover="manual" role="status">
-   Saved
+   <span aria-hidden="true" class="toastIcon">
+    ⓘ
+   </span>
+   <span class="toastText">
+    Saved
+   </span>
   </div>
   <script src="./assets/app.js" type="module">
   </script>
