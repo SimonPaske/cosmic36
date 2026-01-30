@@ -3,16 +3,25 @@ import { getDayType } from "../core/cycle.js";
 import { dayNumber, parseDob } from "../core/time.js";
 import { $ } from "../ui/dom.js";
 import { showToast } from "../ui/toast.js";
+import { saveSettings } from "../settings/settings.js";
 
 let reminderTimer = null;
 
 export function initNotifications(state) {
-  const notifPermBtn = $("notifPermBtn");
-  let testNotifBtn = $("testNotifBtn");
+  const notifToggle = $("notifToggle");
+  const testNotifBtn = $("testNotifBtn");
   const notifStatus = $("notifStatus");
   const notifStatusPill = $("notifStatusPill");
+  const notifAppStatus = $("notifAppStatus");
+  const notifPermStatus = $("notifPermStatus");
+  const notifHelp = $("notifHelp");
   const nextReminderText = $("nextReminderText");
   const reminderMeta = $("reminderMeta");
+
+  function persistNotifSetting(nextEnabled) {
+    state.notificationsEnabled = !!nextEnabled;
+    saveSettings(state);
+  }
 
   function setNotifToastFromState() {
     if (!("Notification" in window)) {
@@ -20,79 +29,76 @@ export function initNotifications(state) {
       return;
     }
     const permission = Notification.permission;
-    if (permission === "granted") showToast("Notifications enabled ✓", "success");
-    else if (permission === "denied") showToast("Notifications blocked", "warn");
+    if (permission === "granted") {
+      showToast(state.notificationsEnabled ? "Notifications enabled ✓" : "Notifications off", state.notificationsEnabled ? "success" : "warn");
+    } else if (permission === "denied") showToast("Notifications blocked", "warn");
     else showToast("Notifications: permission needed", "warn");
   }
 
   function updateNotifUI() {
-    if (!notifStatus || !notifStatusPill || !notifPermBtn) return;
+    if (!notifStatus || !notifStatusPill || !notifToggle) return;
     if (!("Notification" in window)) {
       notifStatus.textContent = "Notifications not supported on this device.";
-      notifPermBtn.disabled = true;
-      notifPermBtn.textContent = "Unavailable";
       notifStatusPill.classList.remove("ok", "warn");
       notifStatusPill.classList.add("warn");
+      if (notifToggle) {
+        notifToggle.disabled = true;
+        notifToggle.checked = false;
+      }
+      if (notifAppStatus) notifAppStatus.textContent = "App setting: Off";
+      if (notifPermStatus) notifPermStatus.textContent = "Browser permission: Not supported";
+      if (notifHelp) notifHelp.hidden = true;
+      if (testNotifBtn) testNotifBtn.disabled = true;
       return;
     }
 
     const permission = Notification.permission;
+    if (permission === "denied" && state.notificationsEnabled) {
+      persistNotifSetting(false);
+    }
+    const appEnabled = !!state.notificationsEnabled;
+    if (notifAppStatus) notifAppStatus.textContent = `App setting: ${appEnabled ? "On" : "Off"}`;
+    if (notifPermStatus) {
+      const permLabel = permission === "default" ? "Not asked" : permission[0].toUpperCase() + permission.slice(1);
+      notifPermStatus.textContent = `Browser permission: ${permLabel}`;
+    }
+
     if (permission === "granted") {
-      notifStatus.textContent = "Notifications enabled ✓";
-      notifPermBtn.disabled = true;
-      notifPermBtn.textContent = "Enabled ✓";
-      notifStatusPill.classList.remove("warn");
-      notifStatusPill.classList.add("ok");
+      notifToggle.disabled = false;
+      notifToggle.checked = appEnabled;
+      if (appEnabled) {
+        notifStatus.textContent = "Notifications enabled ✓";
+        notifStatusPill.classList.remove("warn");
+        notifStatusPill.classList.add("ok");
+        if (testNotifBtn) testNotifBtn.disabled = false;
+      } else {
+        notifStatus.textContent = "Notifications off in app.";
+        notifStatusPill.classList.remove("ok");
+        notifStatusPill.classList.remove("warn");
+        if (testNotifBtn) testNotifBtn.disabled = true;
+      }
+      if (notifHelp) notifHelp.hidden = true;
     } else if (permission === "denied") {
       notifStatus.textContent = "Notifications blocked in browser settings.";
-      notifPermBtn.disabled = true;
-      notifPermBtn.textContent = "Blocked";
       notifStatusPill.classList.remove("ok");
       notifStatusPill.classList.add("warn");
+      notifToggle.disabled = true;
+      notifToggle.checked = false;
+      if (notifHelp) {
+        notifHelp.hidden = false;
+        notifHelp.textContent = "Allow notifications in browser settings to enable.";
+      }
+      if (testNotifBtn) testNotifBtn.disabled = true;
     } else {
-      notifStatus.textContent = "Notifications are optional — reminders still appear inside the app.";
-      notifPermBtn.disabled = false;
-      notifPermBtn.textContent = "Enable notifications";
+      notifToggle.disabled = false;
+      notifToggle.checked = appEnabled;
+      notifStatus.textContent = appEnabled
+        ? "Notifications need permission."
+        : "Notifications off in app.";
       notifStatusPill.classList.remove("ok", "warn");
+      if (notifHelp) notifHelp.hidden = true;
+      if (testNotifBtn) testNotifBtn.disabled = true;
     }
-  }
-
-  function ensureTestNotifButton() {
-    if (testNotifBtn || !notifPermBtn) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = "testNotifBtn";
-    btn.className = notifPermBtn.className || "btn";
-    btn.textContent = "Test notification";
-    notifPermBtn.insertAdjacentElement("afterend", btn);
-    testNotifBtn = btn;
-
-    testNotifBtn.addEventListener("click", async () => {
-      if (!("Notification" in window)) {
-        showToast("Notifications not supported", "warn");
-        return;
-      }
-
-      if (Notification.permission === "default") {
-        const p = await Notification.requestPermission();
-        updateNotifUI();
-        if (p !== "granted") {
-          showToast("Notifications not enabled", "warn");
-          return;
-        }
-      }
-
-      if (Notification.permission !== "granted") {
-        showToast("Notifications are blocked", "warn");
-        return;
-      }
-
-      const ok = await tryShowNotification(
-        "Cosmic 36 — Test notification",
-        "If you see this, notifications are working on this device/browser."
-      );
-      showToast(ok ? "Test notification sent" : "Couldn’t show notification (browser blocked)", ok ? "success" : "warn");
-    });
   }
 
   function isReminderDay(dayInCycle) {
@@ -159,6 +165,7 @@ export function initNotifications(state) {
   async function tryShowNotification(title, body) {
     try {
       if (!("Notification" in window)) return false;
+      if (!state.notificationsEnabled) return false;
       if (Notification.permission !== "granted") return false;
       new Notification(title, { body });
       return true;
@@ -215,24 +222,39 @@ export function initNotifications(state) {
     }, ms);
   }
 
-  if (notifPermBtn) {
-    notifPermBtn.addEventListener("click", async () => {
+  if (notifToggle) {
+    notifToggle.addEventListener("change", async () => {
       if (!("Notification" in window)) {
         showToast("Notifications not supported", "warn");
+        notifToggle.checked = false;
         return;
       }
 
-      if (Notification.permission === "granted" || Notification.permission === "denied") {
+      const wantsOn = !!notifToggle.checked;
+      const permission = Notification.permission;
+
+      if (permission === "denied") {
+        persistNotifSetting(false);
+        notifToggle.checked = false;
         updateNotifUI();
         setNotifToastFromState();
         return;
       }
 
-      const permission = await Notification.requestPermission();
+      if (permission === "default" && wantsOn) {
+        const requested = await Notification.requestPermission();
+        if (requested !== "granted") {
+          persistNotifSetting(false);
+          notifToggle.checked = false;
+          updateNotifUI();
+          showToast(requested === "denied" ? "Notifications blocked" : "Notifications not enabled", "warn");
+          return;
+        }
+      }
+
+      persistNotifSetting(wantsOn);
       updateNotifUI();
-      if (permission === "granted") showToast("Notifications enabled ✓", "success");
-      else if (permission === "denied") showToast("Notifications blocked", "warn");
-      else showToast("Notifications: permission needed", "warn");
+      showToast(wantsOn ? "Notifications enabled ✓" : "Notifications off", wantsOn ? "success" : "warn");
     });
   }
 
@@ -244,6 +266,11 @@ export function initNotifications(state) {
     testNotifBtn.addEventListener("click", async () => {
       if (!("Notification" in window)) {
         showToast("Notifications not supported", "warn");
+        return;
+      }
+
+      if (!state.notificationsEnabled) {
+        showToast("Notifications are disabled", "warn");
         return;
       }
 
@@ -270,7 +297,6 @@ export function initNotifications(state) {
   }
 
   updateNotifUI();
-  ensureTestNotifButton();
 
   return { updateNextReminderUI, scheduleNextReminder, updateNotifUI };
 }

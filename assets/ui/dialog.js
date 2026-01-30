@@ -33,6 +33,11 @@ export function openDialog(dialogEl, openerBtn) {
   if (openerBtn) openerBtn.setAttribute("aria-expanded", "true");
   if (!dialogEl) return;
 
+  const body = document.body;
+  const count = Number(body.dataset.modalCount || 0) + 1;
+  body.dataset.modalCount = String(count);
+  body.classList.add("modal-open");
+
   dialogEl._returnFocus = document.activeElement;
   if (typeof dialogEl.showModal === "function") dialogEl.showModal();
   else dialogEl.setAttribute("open", "");
@@ -59,4 +64,13 @@ export function closeDialog(dialogEl, openerBtn) {
   }
   if (openerBtn) openerBtn.focus();
   else dialogEl._returnFocus?.focus?.();
+
+  const body = document.body;
+  const count = Math.max(0, Number(body.dataset.modalCount || 0) - 1);
+  if (count === 0) {
+    delete body.dataset.modalCount;
+    body.classList.remove("modal-open");
+  } else {
+    body.dataset.modalCount = String(count);
+  }
 }

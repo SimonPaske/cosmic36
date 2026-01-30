@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gentle: settings.gentle !== false,
     experience: settings.experience || "compact",
     remindersEnabled: !!settings.remindersEnabled,
+    notificationsEnabled: settings.notificationsEnabled !== false,
     reminderKinds: settings.reminderKinds || "anchor_echo",
     reminderTime: settings.reminderTime || "09:00",
     autoBackupEnabled: !!settings.autoBackupEnabled,

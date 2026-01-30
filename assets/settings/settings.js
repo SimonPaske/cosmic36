@@ -10,6 +10,7 @@ export function loadSettings() {
     gentle: true,
     experience: "compact",
     remindersEnabled: false,
+    notificationsEnabled: true,
     reminderKinds: "anchor_echo",
     reminderTime: "09:00",
     autoBackupEnabled: false
@@ -28,6 +29,7 @@ export function saveSettings(state) {
     gentle: state.gentle,
     experience: state.experience,
     remindersEnabled: state.remindersEnabled,
+    notificationsEnabled: state.notificationsEnabled,
     reminderKinds: state.reminderKinds,
     reminderTime: state.reminderTime,
     autoBackupEnabled: state.autoBackupEnabled

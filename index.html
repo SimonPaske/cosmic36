@@ -444,24 +444,42 @@
       </div>
      </div>
      <div class="field notifRow">
-      <div class="notifStatusPill" id="notifStatusPill">
-       <span aria-hidden="true" class="pillDot">
-       </span>
-       <span id="notifStatus">
-        Notifications are optional &mdash; reminders still appear inside the app.
-       </span>
+      <div class="notifInfo">
+       <div class="notifStatusPill" id="notifStatusPill">
+        <span aria-hidden="true" class="pillDot">
+        </span>
+        <span id="notifStatus">
+         Notifications are optional &mdash; reminders still appear inside the app.
+        </span>
+       </div>
+       <div class="notifMeta">
+        <div class="tiny" id="notifAppStatus">
+         App setting: Off
+        </div>
+        <div class="tiny" id="notifPermStatus">
+         Browser permission: Not asked
+        </div>
+        <div class="tiny" hidden="" id="notifHelp">
+         Allow notifications in browser settings to enable.
+        </div>
+       </div>
       </div>
-      <div class="reminderControls">
-       <button class="btn" id="notifPermBtn" type="button">
-        Enable notifications
-       </button>
+      <div class="notifControls">
+       <label class="switch">
+        <input id="notifToggle" type="checkbox"/>
+        <span aria-hidden="true" class="switchTrack">
+        </span>
+        <span class="switchText">
+         Notifications
+        </span>
+       </label>
        <button class="btn" id="testNotifBtn" type="button">
         Test notification
        </button>
       </div>
      </div>
      <div class="tiny">
-      Push notifications work best when the app is installed (Add to Home Screen) and notifications are allowed.
+      Turning off keeps reminders inside the app. Push notifications work best when the app is installed (Add to Home Screen).
      </div>
     </section>
     <!-- Cloud backup -->

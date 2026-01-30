@@ -12,6 +12,16 @@ export function applyLayout(state) {
 
 export function applyExperience(state) {
   document.documentElement.dataset.experience = state.experience;
+  document.documentElement.dataset.density = state.density || "minimal";
   const extrasWrap = $("extrasWrap");
   if (extrasWrap) extrasWrap.hidden = state.experience !== "complete";
+  const detailsIntention = $("detailsIntention");
+  const detailsReflection = $("detailsReflection");
+  const detailsClose = $("detailsClose");
+  const shouldOpen = state.experience === "complete";
+  [detailsIntention, detailsReflection, detailsClose].forEach((el) => {
+    if (!el) return;
+    if (shouldOpen) el.setAttribute("open", "");
+    else el.removeAttribute("open");
+  });
 }
