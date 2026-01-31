@@ -68,7 +68,7 @@
      </div>
     </header>
     <!-- PROGRESS (36 days) -->
-    <section aria-label="Cycle progress" class="progressSection">
+    <section aria-label="Cycle progress" class="progressSection" id="progressSection">
      <div class="progressHead">
       <div class="progressTitle">
        Cycle progress
@@ -99,6 +99,73 @@
        </span>
        Marked
       </span>
+     </div>
+    </section>
+    <section aria-label="Streak and recent history" class="historySection" hidden="" id="historySection">
+     <div class="historyHead">
+      <div class="historyTitle">
+       Streak &amp; history
+      </div>
+      <div class="historyStats">
+       <span id="streakNow">
+        Streak: &mdash;
+       </span>
+       <span id="streakBest">
+        Best: &mdash;
+       </span>
+       <span id="markedCount">
+        Marked: &mdash;
+       </span>
+      </div>
+     </div>
+     <div class="historyHero">
+      <div class="streakBadge" aria-hidden="true">
+       <span class="streakBadgeIcon">
+        🪷
+       </span>
+      </div>
+      <div class="streakHeroText">
+       <div class="streakHeroCount" id="streakCountBig">
+        &mdash;
+       </div>
+       <div class="streakHeroLabel">
+        36-day streak
+       </div>
+       <div class="tiny" id="streakSub">
+        Keep the rhythm.
+       </div>
+      </div>
+     </div>
+     <div class="historyMetrics">
+      <div class="metricCard">
+       <div class="metricLabel">
+        Time in app
+       </div>
+       <div class="metricValue" id="timeInApp">
+        &mdash;
+       </div>
+      </div>
+      <div class="metricCard">
+       <div class="metricLabel">
+        Words written
+       </div>
+       <div class="metricValue" id="wordsWritten">
+        &mdash;
+       </div>
+      </div>
+      <div class="metricCard">
+       <div class="metricLabel">
+        Notes left
+       </div>
+       <div class="metricValue" id="notesLeft">
+        &mdash;
+       </div>
+      </div>
+     </div>
+     <div class="historyRow" id="historyRow" role="list">
+     </div>
+     <div class="tiny">
+      Tap a past day to view notes and spot gaps.
      </div>
     </section>
     <div class="cardBody">
@@ -366,18 +433,34 @@
       <label for="density">
        Guidance density
       </label>
-      <select id="density">
-       <option value="minimal">
-        Minimal
-       </option>
-       <option value="supportive">
-        Supportive
-       </option>
-       <option value="silent">
-        Silent
-       </option>
-      </select>
+     <select id="density">
+      <option value="minimal">
+       Minimal
+      </option>
+      <option value="supportive">
+       Supportive
+      </option>
+      <option value="silent">
+       Silent
+      </option>
+     </select>
+    </div>
+    <div class="field">
+     <label for="progressView">
+      Progress view
+     </label>
+     <select id="progressView">
+      <option value="overview">
+       36-day overview
+      </option>
+      <option value="history">
+       Streak + recent history
+      </option>
+     </select>
+     <div class="tiny">
+      Choose how your progress is displayed on the main screen.
      </div>
+    </div>
      <div class="field">
       <label>
        Experience

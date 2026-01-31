@@ -1,5 +1,5 @@
 import { loadStore } from "./core/store.js";
-import { loadSettings } from "./settings/settings.js";
+import { loadSettings, saveSettings } from "./settings/settings.js";
 import { applyLayout, applyExperience } from "./features/layout.js";
 import { renderMain } from "./features/render.js";
 import { renderProgressBar } from "./features/progress.js";
@@ -14,6 +14,16 @@ import { $ } from "./ui/dom.js";
 import { showNotice } from "./ui/confirm.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const skipStartupRefresh = sessionStorage.getItem("skipStartupRefresh");
+  if (skipStartupRefresh) {
+    sessionStorage.removeItem("skipStartupRefresh");
+  } else if (!sessionStorage.getItem("appRefreshed")) {
+    sessionStorage.setItem("appRefreshed", "1");
+    window.location.reload();
+    return;
+  }
+  sessionStorage.removeItem("appRefreshed");
+
   const store = loadStore();
   const settings = loadSettings();
 
@@ -28,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
     notificationsEnabled: settings.notificationsEnabled !== false,
     reminderKinds: settings.reminderKinds || "anchor_echo",
     reminderTime: settings.reminderTime || "09:00",
+    progressView: settings.progressView || "overview",
+    usageMs: Number.isFinite(settings.usageMs) ? settings.usageMs : 0,
     autoBackupEnabled: !!settings.autoBackupEnabled,
     dayInCycle: null,
     cycleIndex: null,
@@ -44,6 +56,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let reviewApi = null;
   let notificationsApi = null;
+  let usageStart = null;
+
+  function flushUsage() {
+    if (usageStart == null) return;
+    const delta = Date.now() - usageStart;
+    if (delta > 0) {
+      state.usageMs += delta;
+      saveSettings(state);
+    }
+    usageStart = Date.now();
+  }
+
+  function handleVisibility() {
+    if (document.visibilityState === "visible") {
+      usageStart = Date.now();
+      return;
+    }
+    if (usageStart != null) {
+      const delta = Date.now() - usageStart;
+      if (delta > 0) {
+        state.usageMs += delta;
+        saveSettings(state);
+      }
+      usageStart = null;
+    }
+  }
 
   function handleSelectDay(day) {
     if (!state.cycle) return;
@@ -63,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderProgress() {
-    renderProgressBar(state, { onSelectDay: handleSelectDay });
+    renderProgressBar(state, store, { onSelectDay: handleSelectDay });
   }
 
   function renderAll() {
@@ -84,6 +122,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initNotes(state, store, { renderProgressBar: renderProgress, renderAside });
   initPatternInfo();
   initBackup(state);
+  handleVisibility();
+  document.addEventListener("visibilitychange", handleVisibility);
+  window.addEventListener("beforeunload", () => {
+    if (document.visibilityState === "visible") flushUsage();
+  });
 
   renderAll();
 });

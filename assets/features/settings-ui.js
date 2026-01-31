@@ -13,6 +13,7 @@ export function initSettingsUI(state, store, { render }) {
   const dobInput = $("dob");
   const modeRadios = [...document.querySelectorAll('input[name="mode"]')];
   const densitySelect = $("density");
+  const progressViewSelect = $("progressView");
   const gentleRadios = [...document.querySelectorAll('input[name="gentle"]')];
   const experienceRadios = [...document.querySelectorAll('input[name="experience"]')];
   const clearCycleBtn = $("clearCycleBtn");
@@ -32,6 +33,7 @@ export function initSettingsUI(state, store, { render }) {
     if (densitySelect) densitySelect.value = state.density;
     gentleRadios.forEach((r) => (r.checked = r.value === (state.gentle ? "on" : "off")));
     experienceRadios.forEach((r) => (r.checked = r.value === state.experience));
+    if (progressViewSelect) progressViewSelect.value = state.progressView || "overview";
     if (reminderEnabled) reminderEnabled.checked = !!state.remindersEnabled;
     if (reminderKinds) reminderKinds.value = state.reminderKinds || "anchor_echo";
     if (reminderTime) reminderTime.value = state.reminderTime || "09:00";
@@ -84,6 +86,18 @@ export function initSettingsUI(state, store, { render }) {
       state.density = densitySelect.value;
       persistSettings();
       if (render) render();
+    });
+  }
+
+  if (progressViewSelect) {
+    progressViewSelect.addEventListener("change", () => {
+      const nextView = progressViewSelect.value || "overview";
+      if (state.progressView === nextView) return;
+      state.progressView = nextView;
+      persistSettings();
+      if (render) render();
+      sessionStorage.setItem("skipStartupRefresh", "1");
+      window.location.reload();
     });
   }
 

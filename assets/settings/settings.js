@@ -13,6 +13,8 @@ export function loadSettings() {
     notificationsEnabled: true,
     reminderKinds: "anchor_echo",
     reminderTime: "09:00",
+    progressView: "overview",
+    usageMs: 0,
     autoBackupEnabled: false
   };
 
@@ -32,6 +34,8 @@ export function saveSettings(state) {
     notificationsEnabled: state.notificationsEnabled,
     reminderKinds: state.reminderKinds,
     reminderTime: state.reminderTime,
+    progressView: state.progressView,
+    usageMs: state.usageMs,
     autoBackupEnabled: state.autoBackupEnabled
   };
 
