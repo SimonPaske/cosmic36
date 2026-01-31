@@ -962,6 +962,11 @@ dialog::backdrop {
     margin-top: 6px;
 }
 
+.warningText {
+    color: color-mix(in oklab, var(--danger) 80%, var(--muted) 20%);
+    font-weight: 700;
+}
+
 /* Toast */
 .toast {
     position: fixed;
