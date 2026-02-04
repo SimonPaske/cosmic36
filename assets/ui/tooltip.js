@@ -12,7 +12,7 @@ export function closeTooltip() {
   activeTooltip.remove();
   activeTooltip = null;
 
-  // Important: remove scroll-lock + backdrop state (used on mobile modal tooltip)
+  // Remove mobile backdrop/scroll lock if used
   document.body.classList.remove("modal-open");
 
   document.removeEventListener("mousedown", handleOutsideClick, true);
@@ -25,10 +25,10 @@ function handleOutsideClick(e) {
   if (!activeTooltip) return;
   const anchor = activeTooltip._anchorEl;
 
-  // Click inside tooltip → keep open
+  // Tap inside tooltip → keep open
   if (activeTooltip.contains(e.target)) return;
 
-  // Click on anchor button → keep open (so user can tap the ⓘ again without instant close)
+  // Tap on anchor → keep open (prevents instant close when user taps ⓘ)
   if (anchor && anchor.contains(e.target)) return;
 
   closeTooltip();
@@ -62,38 +62,40 @@ export function openTooltip(anchorEl, { title, body }) {
   tip._anchorEl = anchorEl;
   document.body.appendChild(tip);
 
-  // Reset any previous transform that might stick around
+  // Always reset inline positioning so we don't carry state across opens
+  tip.style.top = "";
+  tip.style.left = "";
+  tip.style.right = "";
+  tip.style.bottom = "";
   tip.style.transform = "";
 
   if (isMobile()) {
-    // ✅ Mobile: treat as centered modal
+    // ✅ Mobile: pin to viewport top with equal margins (inset)
+    // Actual spacing handled by CSS class (.tooltip--mobile)
     tip.classList.add("tooltip--mobile");
 
-    tip.style.top = "50%";
-    tip.style.left = "50%";
-    tip.style.transform = "translate(-50%, -50%)";
-
-    // lock scroll + show backdrop via CSS (body.modal-open::before)
+    // Optional: lock background scroll + show backdrop (CSS below)
     document.body.classList.add("modal-open");
   } else {
-    // ✅ Desktop: anchor-based tooltip
+    // ✅ Desktop: anchor-based positioning (your original intent)
     const rect = anchorEl.getBoundingClientRect();
     const margin = 10;
 
+    // Need tooltip size after append
     const tipW = tip.offsetWidth;
     const tipH = tip.offsetHeight;
 
+    // Prefer below if it fits; otherwise above
     const fitsBelow = rect.bottom + margin + tipH < window.innerHeight;
     const top = fitsBelow ? rect.bottom + margin : rect.top - margin - tipH;
 
-    // Clamp left so it stays within viewport
+    // Clamp horizontally into viewport
     const left = Math.min(
       window.innerWidth - tipW - 12,
       Math.max(12, rect.left)
     );
 
-    // Tooltip is position: fixed, so no scroll offsets needed
-    tip.style.top = `${top}px`;
+    tip.style.top = `${Math.max(12, top)}px`;
     tip.style.left = `${left}px`;
   }
 

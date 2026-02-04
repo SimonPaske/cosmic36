@@ -256,6 +256,30 @@ button:active {
     padding: 14px;
 }
 
+.legal {
+    display: grid;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.legal h3 {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 1000;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.legal ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.legal li {
+    margin: 4px 0;
+}
+
 /* ------------------------------
    Progress section (matches card style)
 --------------------------------- */
@@ -1419,9 +1443,30 @@ dialog::backdrop {
     backdrop-filter: blur(10px);
     padding: 12px;
     max-height: calc(100vh - 40px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile tooltip: pinned to viewport with equal margins */
+.tooltip--mobile {
+    top: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+
+    /* Make it use the full available area and scroll inside */
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+
+    /* iOS safe areas */
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .tooltip--mobile {

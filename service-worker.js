@@ -3,6 +3,7 @@ const CACHE_NAME = "cosmic36-v22"; // ✅ bump this every deploy
 const ASSETS = [
     "./",
     "./index.html",
+    "./privacy.html",
     "./manifest.webmanifest",
     "./service-worker.js",
     "./assets/style.css",
