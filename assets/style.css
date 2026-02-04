@@ -53,6 +53,11 @@ html[data-layout="desktop"] {
     --maxw: 980px;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -1166,6 +1171,9 @@ dialog {
     background: var(--panel);
     color: var(--text);
     box-shadow: 0 18px 70px rgba(0, 0, 0, 0.35);
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 dialog::backdrop {
@@ -1434,7 +1442,6 @@ dialog::backdrop {
 .tooltip {
     position: fixed;
     z-index: 9999;
-    max-width: min(380px, calc(100vw - 24px));
     background: rgba(35, 35, 38, 0.95);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1442,11 +1449,12 @@ dialog::backdrop {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
     padding: 12px;
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    webkit-overflow-scrolling: touch;
-    max-height: calc(100vh - 24px);
+
+    /* Desktop sizing */
+    max-width: min(380px, calc(100vw - 24px));
+
+    /* Scrolling */
+    max-height: calc(100dvh - 24px);
     overflow: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -1454,26 +1462,16 @@ dialog::backdrop {
 
 /* Mobile tooltip: pinned to viewport with equal margins */
 .tooltip--mobile {
-    top: 12px !important;
+    top: calc(12px + env(safe-area-inset-top)) !important;
     left: 12px !important;
     right: 12px !important;
-    bottom: 12px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
 
-    /* Make it use the full available area and scroll inside */
     width: auto !important;
     max-width: none !important;
     max-height: none !important;
-
-    /* iOS safe areas */
-    padding-top: calc(12px + env(safe-area-inset-top));
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
-.tooltip--mobile {
-    width: calc(100vw - 24px);
-    max-width: 420px;
-    padding-bottom: env(safe-area-inset-bottom);
-}
 
 .tooltipInner {
     display: grid;

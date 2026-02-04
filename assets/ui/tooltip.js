@@ -12,7 +12,6 @@ export function closeTooltip() {
   activeTooltip.remove();
   activeTooltip = null;
 
-  // Remove mobile backdrop/scroll lock if used
   document.body.classList.remove("modal-open");
 
   document.removeEventListener("mousedown", handleOutsideClick, true);
@@ -25,10 +24,7 @@ function handleOutsideClick(e) {
   if (!activeTooltip) return;
   const anchor = activeTooltip._anchorEl;
 
-  // Tap inside tooltip → keep open
   if (activeTooltip.contains(e.target)) return;
-
-  // Tap on anchor → keep open (prevents instant close when user taps ⓘ)
   if (anchor && anchor.contains(e.target)) return;
 
   closeTooltip();
@@ -62,7 +58,7 @@ export function openTooltip(anchorEl, { title, body }) {
   tip._anchorEl = anchorEl;
   document.body.appendChild(tip);
 
-  // Always reset inline positioning so we don't carry state across opens
+  // Reset inline styles
   tip.style.top = "";
   tip.style.left = "";
   tip.style.right = "";
@@ -70,26 +66,20 @@ export function openTooltip(anchorEl, { title, body }) {
   tip.style.transform = "";
 
   if (isMobile()) {
-    // ✅ Mobile: pin to viewport top with equal margins (inset)
-    // Actual spacing handled by CSS class (.tooltip--mobile)
+    // Mobile: fullscreen inset panel with margins
     tip.classList.add("tooltip--mobile");
-
-    // Optional: lock background scroll + show backdrop (CSS below)
     document.body.classList.add("modal-open");
   } else {
-    // ✅ Desktop: anchor-based positioning (your original intent)
+    // Desktop: position near anchor
     const rect = anchorEl.getBoundingClientRect();
     const margin = 10;
 
-    // Need tooltip size after append
     const tipW = tip.offsetWidth;
     const tipH = tip.offsetHeight;
 
-    // Prefer below if it fits; otherwise above
     const fitsBelow = rect.bottom + margin + tipH < window.innerHeight;
     const top = fitsBelow ? rect.bottom + margin : rect.top - margin - tipH;
 
-    // Clamp horizontally into viewport
     const left = Math.min(
       window.innerWidth - tipW - 12,
       Math.max(12, rect.left)
