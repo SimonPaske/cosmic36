@@ -74,6 +74,16 @@ body {
 body.modal-open {
     overflow: hidden;
     overscroll-behavior: contain;
+    overflow: hidden;
+    overscroll-behavior: contain;
+}
+
+body.modal-open::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 9998;
 }
 
 a,
@@ -1408,6 +1418,16 @@ dialog::backdrop {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
     padding: 12px;
+    max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+}
+
+.tooltip--mobile {
+    width: calc(100vw - 24px);
+    max-width: 420px;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .tooltipInner {
