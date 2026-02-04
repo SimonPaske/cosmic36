@@ -89,6 +89,7 @@ body.modal-open::before {
     inset: 0;
     background: rgba(0, 0, 0, 0.35);
     z-index: 9998;
+    pointer-events: none;
 }
 
 a,

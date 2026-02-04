@@ -2,29 +2,65 @@
 
 let activeTooltip = null;
 
+// iOS scroll-freeze state
+let savedScrollY = 0;
+
 function isMobile() {
   return window.matchMedia("(max-width: 520px)").matches;
 }
 
-export function closeTooltip() {
-  if (!activeTooltip) return;
+function freezeBodyScroll() {
+  savedScrollY = window.scrollY || 0;
 
-  activeTooltip.remove();
-  activeTooltip = null;
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${savedScrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
 
-  document.body.classList.remove("modal-open");
+function unfreezeBodyScroll() {
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
 
-  document.removeEventListener("mousedown", handleOutsideClick, true);
+  window.scrollTo(0, savedScrollY);
+}
+
+function removeListeners() {
+  document.removeEventListener("pointerdown", handleOutside, true);
+  document.removeEventListener("touchstart", handleOutside, true);
+  document.removeEventListener("click", handleOutside, true);
   document.removeEventListener("keydown", handleEsc, true);
   window.removeEventListener("resize", closeTooltip, true);
   window.removeEventListener("scroll", closeTooltip, true);
 }
 
-function handleOutsideClick(e) {
+export function closeTooltip() {
   if (!activeTooltip) return;
+
+  const wasMobile = activeTooltip.classList.contains("tooltip--mobile");
+
+  activeTooltip.remove();
+  activeTooltip = null;
+
+  document.body.classList.remove("modal-open");
+  if (wasMobile) unfreezeBodyScroll();
+
+  removeListeners();
+}
+
+function handleOutside(e) {
+  if (!activeTooltip) return;
+
   const anchor = activeTooltip._anchorEl;
 
+  // Tap inside tooltip → keep open
   if (activeTooltip.contains(e.target)) return;
+
+  // Tap on anchor button → keep open
   if (anchor && anchor.contains(e.target)) return;
 
   closeTooltip();
@@ -65,12 +101,13 @@ export function openTooltip(anchorEl, { title, body }) {
   tip.style.bottom = "";
   tip.style.transform = "";
 
-  if (isMobile()) {
-    // Mobile: fullscreen inset panel with margins
+  const mobile = isMobile();
+
+  if (mobile) {
     tip.classList.add("tooltip--mobile");
     document.body.classList.add("modal-open");
+    freezeBodyScroll();
   } else {
-    // Desktop: position near anchor
     const rect = anchorEl.getBoundingClientRect();
     const margin = 10;
 
@@ -87,12 +124,17 @@ export function openTooltip(anchorEl, { title, body }) {
 
     tip.style.top = `${Math.max(12, top)}px`;
     tip.style.left = `${left}px`;
+
+    window.addEventListener("scroll", closeTooltip, true);
   }
 
   activeTooltip = tip;
 
-  document.addEventListener("mousedown", handleOutsideClick, true);
+  // PWA/iOS reliable close listeners
+  document.addEventListener("pointerdown", handleOutside, true);
+  document.addEventListener("touchstart", handleOutside, true);
+  document.addEventListener("click", handleOutside, true);
+
   document.addEventListener("keydown", handleEsc, true);
   window.addEventListener("resize", closeTooltip, true);
-  window.addEventListener("scroll", closeTooltip, true);
 }
