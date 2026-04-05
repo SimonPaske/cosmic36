@@ -394,7 +394,7 @@ export function initBackup(state) {
   }
 
   function scheduleAutoBackup() {
-    if (!state.autoBackupEnabled || !isTokenValid()) return;
+    if (!state.autoBackupEnabled || !isConnected) return;
     const now = Date.now();
     if (now - lastAutoBackupAt < 30000) return;
     if (autoBackupTimer) window.clearTimeout(autoBackupTimer);
