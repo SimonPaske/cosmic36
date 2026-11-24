@@ -114,44 +114,65 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
     if (state.saveTimer) clearTimeout(state.saveTimer);
     setSaveIndicator("saving");
 
-    state.saveTimer = setTimeout(() => {
-      state.cycle.notes[String(state.dayInCycle)] = noteBox.value || "";
-      persistCycle();
-      if (renderProgressBar) renderProgressBar();
-      setSaveIndicator("saved");
-    }, 650);
+    state.saveTimer = setTimeout(commitNote, 650);
+  }
+
+  function commitNote() {
+    if (state.saveTimer) clearTimeout(state.saveTimer);
+    state.saveTimer = null;
+    if (!state.cycle || !noteBox) return;
+    state.cycle.notes[String(state.dayInCycle)] = noteBox.value || "";
+    persistCycle();
+    if (renderProgressBar) renderProgressBar();
+    setSaveIndicator("saved");
+  }
+
+  const EXTRA_TEXT = { intention: intentionSaveText, reflection: reflectionSaveText, close: cycleSaveText };
+  // One timer per field group, so typing in one box never cancels another's save.
+  const extraTimers = {};
+
+  function commitExtra(which) {
+    if (extraTimers[which]) clearTimeout(extraTimers[which]);
+    delete extraTimers[which];
+    if (!state.cycle) return;
+    const day = String(state.dayInCycle);
+    if (which === "intention" && intentionBox) {
+      if (!state.cycle.intention) state.cycle.intention = {};
+      state.cycle.intention[day] = intentionBox.value || "";
+    }
+    if (which === "reflection" && reflectionBox) {
+      if (!state.cycle.reflection) state.cycle.reflection = {};
+      state.cycle.reflection[day] = reflectionBox.value || "";
+    }
+    if (which === "close") {
+      if (!state.cycle.close) state.cycle.close = { lesson: "", carry: "", release: "" };
+      if (cycleLessonBox) state.cycle.close.lesson = cycleLessonBox.value || "";
+      if (cycleCarryBox) state.cycle.close.carry = cycleCarryBox.value || "";
+      if (cycleReleaseBox) state.cycle.close.release = cycleReleaseBox.value || "";
+    }
+    persistCycle();
+    setMiniSaved(EXTRA_TEXT[which], "saved");
   }
 
   function scheduleExtraAutosave(which) {
-    if (!state.cycle) return;
-    if (state.extraSaveTimer) clearTimeout(state.extraSaveTimer);
-
-    const map = {
-      intention: { box: intentionBox, text: intentionSaveText, store: state.cycle.intention },
-      reflection: { box: reflectionBox, text: reflectionSaveText, store: state.cycle.reflection },
-      close: { box: null, text: cycleSaveText, store: state.cycle.close }
-    };
-    const cfg = map[which];
-    if (!cfg) return;
-
-    if (which === "intention" || which === "reflection" || which === "close") {
-      syncAutoDoneStatus();
-    }
-
-    setMiniSaved(cfg.text, "saving");
-
-    state.extraSaveTimer = setTimeout(() => {
-      if (which === "intention" && cfg.box) cfg.store[String(state.dayInCycle)] = cfg.box.value || "";
-      if (which === "reflection" && cfg.box) cfg.store[String(state.dayInCycle)] = cfg.box.value || "";
-      if (which === "close") {
-        if (cycleLessonBox) state.cycle.close.lesson = cycleLessonBox.value || "";
-        if (cycleCarryBox) state.cycle.close.carry = cycleCarryBox.value || "";
-        if (cycleReleaseBox) state.cycle.close.release = cycleReleaseBox.value || "";
-      }
-      persistCycle();
-      setMiniSaved(cfg.text, "saved");
-    }, 650);
+    if (!state.cycle || !(which in EXTRA_TEXT)) return;
+    if (extraTimers[which]) clearTimeout(extraTimers[which]);
+    syncAutoDoneStatus();
+    setMiniSaved(EXTRA_TEXT[which], "saving");
+    extraTimers[which] = setTimeout(() => commitExtra(which), 650);
   }
+
+  // Save anything still waiting on its debounce timer. Called when the page is
+  // hidden or unloaded, so closing the tab right after typing loses nothing.
+  function flushPendingSaves() {
+    if (state.saveTimer) commitNote();
+    Object.keys(extraTimers).forEach(commitExtra);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPendingSaves();
+  });
+  window.addEventListener("pagehide", flushPendingSaves);
 
   if (statusBtn) {
     statusBtn.addEventListener("click", () => {
@@ -168,13 +189,7 @@ export function initNotes(state, store, { renderProgressBar, renderAside }) {
 
   if (noteBox) {
     noteBox.addEventListener("input", scheduleNoteAutosave);
-    noteBox.addEventListener("blur", () => {
-      if (!state.cycle) return;
-      state.cycle.notes[String(state.dayInCycle)] = noteBox.value || "";
-      persistCycle();
-      if (renderProgressBar) renderProgressBar();
-      setSaveIndicator("saved");
-    });
+    noteBox.addEventListener("blur", commitNote);
   }
 
   if (expandBtn && noteBox) {

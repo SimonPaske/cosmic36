@@ -22,6 +22,11 @@ function escapePlain(text) {
   return String(text || "").replace(/\r\n/g, "\n").trim();
 }
 
+const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function escapeHtml(text) {
+  return String(text ?? "").replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
+}
+
 export function initReview(state, store, { render, openSettingsDialog }) {
   const reviewDialog = $("reviewDialog");
   const reviewTitle = $("reviewTitle");
@@ -51,6 +56,7 @@ export function initReview(state, store, { render, openSettingsDialog }) {
   let selectedDay = null;
 
   function setReviewMode(mode, day = null) {
+    if (state.reviewSaveTimer) commitReviewEdit();
     reviewMode = mode;
     selectedDay = day;
     const isDay = reviewMode === "day";
@@ -267,14 +273,14 @@ export function initReview(state, store, { render, openSettingsDialog }) {
 
     noteList.innerHTML = items
       .map((it) => {
-        const text = it.text.replace(/\n/g, "<br>");
+        const text = escapeHtml(it.text).replace(/\n/g, "<br>");
         return `
           <div class="noteItem">
             <div class="noteMeta">
-              <b>${it.label}</b>
+              <b>${escapeHtml(it.label)}</b>
               <span>${text}</span>
             </div>
-            <span class="badge ${it.badge}">${it.label}</span>
+            <span class="badge ${escapeHtml(it.badge)}">${escapeHtml(it.label)}</span>
           </div>
         `;
       })
@@ -306,10 +312,10 @@ export function initReview(state, store, { render, openSettingsDialog }) {
         return `
           <div class="noteItem" data-idx="${idx}">
             <div class="noteMeta">
-              <b>${it.label}</b>
-              <span>${it.preview}${ell}</span>
+              <b>${escapeHtml(it.label)}</b>
+              <span>${escapeHtml(it.preview)}${ell}</span>
             </div>
-            <span class="badge ${it.badgeClass}">${it.badgeLabel}</span>
+            <span class="badge ${escapeHtml(it.badgeClass)}">${escapeHtml(it.badgeLabel)}</span>
           </div>
         `;
       })
@@ -325,6 +331,8 @@ export function initReview(state, store, { render, openSettingsDialog }) {
   }
 
   function openReviewEditor(item) {
+    // Save a pending edit to the previously selected item before switching.
+    if (state.reviewSaveTimer) commitReviewEdit();
     state.selectedReviewItem = item;
     if (!reviewEditorWrap || !reviewEditor) return;
     reviewEditorWrap.hidden = false;
@@ -338,33 +346,47 @@ export function initReview(state, store, { render, openSettingsDialog }) {
     if (state.reviewSaveTimer) clearTimeout(state.reviewSaveTimer);
     if (reviewSaveText) reviewSaveText.textContent = "Saving…";
 
-    state.reviewSaveTimer = setTimeout(() => {
-      const { storeKey, day, kind } = state.selectedReviewItem;
-      const cycle = store[storeKey];
-      if (!cycle) return;
-
-      if (kind === "note") cycle.notes[String(day)] = reviewEditor.value || "";
-      if (kind === "intention") {
-        if (!cycle.intention) cycle.intention = {};
-        cycle.intention[String(day)] = reviewEditor.value || "";
-      }
-      if (kind === "reflection") {
-        if (!cycle.reflection) cycle.reflection = {};
-        cycle.reflection[String(day)] = reviewEditor.value || "";
-      }
-      cycle.updatedAt = Date.now();
-      store[storeKey] = cycle;
-      saveJSON(STORE_KEY, store);
-
-      if (reviewSaveText) reviewSaveText.textContent = "Saved ✓";
-      setTimeout(() => {
-        if (reviewSaveText) reviewSaveText.textContent = "Autosave enabled";
-      }, 900);
-
-      render();
-      renderReview();
-    }, 650);
+    state.reviewSaveTimer = setTimeout(commitReviewEdit, 650);
   }
+
+  function commitReviewEdit() {
+    if (state.reviewSaveTimer) clearTimeout(state.reviewSaveTimer);
+    state.reviewSaveTimer = null;
+    if (!state.selectedReviewItem || !reviewEditor) return;
+    const { storeKey, day, kind } = state.selectedReviewItem;
+    const cycle = store[storeKey];
+    if (!cycle) return;
+
+    if (kind === "note") cycle.notes[String(day)] = reviewEditor.value || "";
+    if (kind === "intention") {
+      if (!cycle.intention) cycle.intention = {};
+      cycle.intention[String(day)] = reviewEditor.value || "";
+    }
+    if (kind === "reflection") {
+      if (!cycle.reflection) cycle.reflection = {};
+      cycle.reflection[String(day)] = reviewEditor.value || "";
+    }
+    cycle.updatedAt = Date.now();
+    store[storeKey] = cycle;
+    saveJSON(STORE_KEY, store);
+
+    if (reviewSaveText) reviewSaveText.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (reviewSaveText) reviewSaveText.textContent = "Autosave enabled";
+    }, 900);
+
+    render();
+    renderReview();
+  }
+
+  // Don't lose the last edit if the page is hidden or closed mid-debounce.
+  const flushReviewEdit = () => {
+    if (state.reviewSaveTimer) commitReviewEdit();
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushReviewEdit();
+  });
+  window.addEventListener("pagehide", flushReviewEdit);
 
   async function exportNotesTXT() {
     if (!state.dobStr) {
