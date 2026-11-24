@@ -1,4 +1,6 @@
-import { loadStore } from "./core/store.js";
+import { loadStore, requestPersistentStorage } from "./core/store.js";
+import { STORE_KEY } from "./core/constants.js";
+import { showToast } from "./ui/toast.js";
 import { loadSettings, saveSettings } from "./settings/settings.js";
 import { applyLayout, applyExperience } from "./features/layout.js";
 import { renderMain } from "./features/render.js";
@@ -14,16 +16,6 @@ import { $ } from "./ui/dom.js";
 import { showNotice } from "./ui/confirm.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const skipStartupRefresh = sessionStorage.getItem("skipStartupRefresh");
-  if (skipStartupRefresh) {
-    sessionStorage.removeItem("skipStartupRefresh");
-  } else if (!sessionStorage.getItem("appRefreshed")) {
-    sessionStorage.setItem("appRefreshed", "1");
-    window.location.reload();
-    return;
-  }
-  sessionStorage.removeItem("appRefreshed");
-
   const store = loadStore();
   const settings = loadSettings();
 
@@ -57,6 +49,20 @@ document.addEventListener("DOMContentLoaded", () => {
   let reviewApi = null;
   let notificationsApi = null;
   let usageStart = null;
+
+  // Surface failed writes instead of silently showing "Saved".
+  let lastStorageWarning = 0;
+  document.addEventListener("cosmic36:storage-error", () => {
+    if (Date.now() - lastStorageWarning < 10000) return;
+    lastStorageWarning = Date.now();
+    showToast("Couldn't save — browser storage is full or blocked. Download a backup.", "warn");
+  });
+
+  // Once the user has real data, ask the browser to keep it.
+  document.addEventListener("cosmic36:localstorage-saved", (event) => {
+    if (event.detail?.key === STORE_KEY) requestPersistentStorage();
+  });
+  if (Object.keys(store).length) requestPersistentStorage();
 
   function flushUsage() {
     if (usageStart == null) return;

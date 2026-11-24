@@ -96,7 +96,6 @@ export function initSettingsUI(state, store, { render }) {
       state.progressView = nextView;
       persistSettings();
       if (render) render();
-      sessionStorage.setItem("skipStartupRefresh", "1");
       window.location.reload();
     });
   }

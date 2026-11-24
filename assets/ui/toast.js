@@ -1,6 +1,9 @@
 import { $ } from "./dom.js";
 
-export function showToast(message, tone = "info") {
+export function showToast(message, tone = "info", duration) {
+  // Short confirmations stay snappy; warnings and longer text stay readable.
+  const baseMs = tone === "warn" || tone === "error" ? 3200 : 900;
+  const visibleMs = duration ?? Math.max(baseMs, String(message).length * 45);
   const toast = $("toast");
   if (!toast) return;
   const textEl = toast.querySelector(".toastText");
@@ -41,5 +44,5 @@ export function showToast(message, tone = "info") {
         } catch {}
       }, 200);
     }
-  }, 900);
+  }, visibleMs);
 }
