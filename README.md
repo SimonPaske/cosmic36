@@ -223,9 +223,17 @@ All data is stored locally in your browser using **localStorage**:
 
 - No account needed
 - No cloud sync by default
-- If you clear browser storage, notes can be lost
+- If you clear browser storage, notes can be lost (Safari may also clear data for sites you haven't visited in 7 days unless the app is installed to the Home Screen)
 
-If you want backup, use **Export** regularly.
+### Backup options (Settings → Backup)
+
+- **Download / Import backup file** — a `.json` file with all notes and settings. Works offline, no account needed.
+- **Google Drive** — a private copy in your Drive *app data* folder (only this app can read it).
+  - **Auto-backup** uploads shortly after you write. Google sessions last about an hour; after that, tap **Reconnect Google** to resume (browsers block sign-in pop-ups that don't come from a tap).
+  - **Daily snapshots** of the last 14 days are kept, and **Restore…** lets you pick a version.
+  - If another device changed the Drive backup, you're offered a **merge** instead of an overwrite.
+  - Auto-backup pauses and asks first if many notes disappear at once (e.g. after clearing a cycle).
+- **Undo last restore** puts back what this device had before a restore, merge or import.
 
 ---
 

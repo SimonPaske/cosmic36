@@ -19,7 +19,6 @@
   <link href="./icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
   <link href="./assets/style.css" rel="stylesheet">
   </link>
-  <script defer src="https://accounts.google.com/gsi/client"></script>
  </head>
  <body>
   <div aria-hidden="true" class="aura">
@@ -578,13 +577,32 @@
      </div>
     </section>
     <!-- Cloud backup -->
-    <section aria-label="Cloud backup" class="settingsGroup">
+    <section aria-label="Backup" class="settingsGroup">
      <div class="settingsGroupTitle">
-      Cloud backup
+      Backup
      </div>
      <div class="field">
       <div class="tiny">
-       Sign in with Google to save a private backup in your Drive app data folder.
+       Your notes live only in this browser. Keep a copy as a file, in Google Drive, or both.
+      </div>
+     </div>
+     <div class="field">
+      <div class="backupRow">
+       <button class="btn" id="downloadBackupFileBtn" type="button">
+        Download backup file
+       </button>
+       <button class="btn" id="importBackupFileBtn" type="button">
+        Import backup file
+       </button>
+       <input accept=".json,application/json" hidden="" id="importBackupFileInput" type="file"/>
+      </div>
+      <div class="tiny">
+       Works offline and without an account. Keep the file somewhere safe (e.g. Files, iCloud, email to yourself).
+      </div>
+     </div>
+     <div class="field">
+      <div class="tiny">
+       Google Drive: a private backup in your Drive app data folder (only this app can see it).
       </div>
      </div>
      <div class="field">
@@ -606,7 +624,7 @@
         Backup now
        </button>
        <button class="btn" disabled="" id="restoreNowBtn" type="button">
-        Restore backup
+        Restore…
        </button>
        <button class="btn dangerBtn" disabled="" id="deleteBackupBtn" type="button">
         Delete backup
@@ -616,11 +634,16 @@
        <input id="autoBackupEnabled" type="checkbox"/>
        Auto-backup when notes change
       </label>
-      <div class="tiny warningText">
-       Warning: If auto-backup is on, clearing the current cycle will back up the cleared notes.
+      <div class="tiny">
+       Daily snapshots of the last 14 days are kept in Drive, so you can restore an older version. Auto-backup pauses and asks first if many notes disappear at once.
       </div>
       <div class="tiny" id="backupMeta">
        Last backup: Never. Last restore: Never.
+      </div>
+      <div class="backupRow">
+       <button class="btn" hidden="" id="undoRestoreBtn" type="button">
+        Undo last restore
+       </button>
       </div>
      </div>
     </section>
@@ -653,12 +676,42 @@
    <div class="dialogBody">
     <div class="field">
      <p id="deleteBackupMessage">
-      This permanently deletes the backup stored in your Google Drive app data.
+      This permanently deletes all Cosmic 36 backups in your Google Drive, including daily snapshots. Notes on this device are not affected.
      </p>
     </div>
     <div class="controls">
      <button class="btn dangerBtn" id="deleteBackupConfirm" type="button">
       Delete backup
+     </button>
+    </div>
+   </div>
+  </dialog>
+  <!-- RESTORE BACKUP -->
+  <dialog aria-describedby="restoreDialogMessage" aria-labelledby="restoreDialogTitle" id="restoreDialog">
+   <div class="dialogHead">
+    <h2 id="restoreDialogTitle">
+     Restore from Google Drive
+    </h2>
+    <button class="topBtn" id="restoreCancel" type="button">
+     Cancel
+    </button>
+   </div>
+   <div class="dialogBody">
+    <div class="field">
+     <label for="restoreVersionSelect">
+      Backup version
+     </label>
+     <select id="restoreVersionSelect">
+     </select>
+    </div>
+    <div class="field">
+     <p class="tiny" id="restoreDialogMessage">
+      This replaces the notes on this device. A copy of your current notes is kept so you can undo.
+     </p>
+    </div>
+    <div class="controls">
+     <button class="btn" id="restoreConfirm" type="button">
+      Restore
      </button>
     </div>
    </div>
